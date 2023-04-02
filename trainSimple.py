@@ -20,6 +20,7 @@ weight_decay = 1e-4
 n_workers = 0
 image_save_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\saved_images'
 model_save_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\pytorch-segmentation\model_1'
+dataset_path    = ''
 def train_one_epoch(model, dataloader, optimizer,criterion, device):
     model.train()
     tl = 0
@@ -94,10 +95,10 @@ def main():
     train_transform = get_transform('train', resolution=(320,320))
     test_transform  = get_transform(False, resolution = (320,320))
 
-    train_dataset = CustomSegmentation(root_dir = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01'
+    train_dataset = CustomSegmentation(root_dir = dataset_path
                                        , image_set = 'train',
                                        transforms = train_transform)
-    test_dataset  = CustomSegmentation(root_dir = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01',
+    test_dataset  = CustomSegmentation(root_dir = dataset_path,
                                        image_set = 'val',
                                        transforms = test_transform)
 

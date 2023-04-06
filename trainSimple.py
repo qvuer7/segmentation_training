@@ -8,6 +8,7 @@ import torch.nn as nn
 from tqdm import tqdm
 from resnet34.fcn_resnet import fcn_resnet34
 from torch.utils.tensorboard import SummaryWriter
+from utils import get_transform_train
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -106,7 +107,8 @@ def main():
 
 
 
-    train_transform = get_transform('train', resolution=(320,320))
+    #train_transform = get_transform('train', resolution=(320,320))
+    train_transform = get_transform_train()
     test_transform  = get_transform(False, resolution = (320,320))
 
     train_dataset = CustomSegmentation(root_dir = dataset_path
@@ -153,7 +155,7 @@ def main():
             torch.save({'model': model.state_dict(),
                         'num_classes': n_classes,
                         'resolution' : (320, 320),
-                        'arch': 'fcn_resnet34'}, f'{model_save_path}/model_{epoch}.pth',
+                        'arch': 'fcn_resnet50'}, f'{model_save_path}/model_{epoch}.pth',
                        )
 
 if __name__ == '__main__':

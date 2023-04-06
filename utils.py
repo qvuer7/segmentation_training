@@ -72,3 +72,14 @@ if __name__ == '__main__':
 
 
 
+import torchvision.transforms as tr
+def get_transform_train():
+    transform = tr.Compose([
+        tr.RandomHorizontalFlip(),
+        tr.RandomRotation(30),
+        tr.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
+        tr.RandomResizedCrop(size=(224, 224), scale=(0.8, 1.0)),
+        tr.ToTensor(),
+        tr.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+    return transform

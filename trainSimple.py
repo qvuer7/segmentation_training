@@ -7,7 +7,7 @@ import numpy as np
 import torch.nn as nn
 from tqdm import tqdm
 from resnet34.fcn_resnet import fcn_resnet34
-
+from torch.utils.tensorboard import SummaryWriter
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -18,12 +18,14 @@ n_epochs = 31
 batch_size = 8
 lr = 0.01
 momentum = 0.9
-weight_decay = 1e-4
+weight_decay = 0.01
+L1_lambda = 0.00001
 n_workers = 2
 image_save_path = '/content/images'
 model_save_path = '/content/checkpoints/'
 dataset_path    = '/content/drive/MyDrive/segmentation_dataset_24_01'
-def train_one_epoch(model, dataloader, optimizer,criterion, device):
+writer = SummaryWriter()
+def train_one_epoch(model, dataloader, optimizer,criterion, device, params):
     model.train()
     tl = 0
     print('TRAINING')
@@ -32,8 +34,14 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device):
 
         image, target = image.to(device), target.to(device)
         out = model(image)
-        loss = criterion(out, target)
+        total_l1_loss = 0
+        for v in params[0]['params']:
+            total_l1_loss += torch.norm(v.data, 1)
 
+        total_l1_loss = total_l1_loss * L1_lambda
+
+        loss = criterion(out, target)
+        loss += total_l1_loss
         tl+=loss.item()
         optimizer.zero_grad()
         loss.backward()
@@ -84,8 +92,8 @@ def main():
         and callable(torchvision.models.segmentation.__dict__[name]))
 
     weights = torchvision.models.ResNet50_Weights
-    #model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes = n_classes, weights_backbone = weights)
-    model = fcn_resnet34(pretrained=False, progress=True, num_classes=2, aux_loss=False)
+    model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes = n_classes, weights_backbone = weights)
+    #model = fcn_resnet34(pretrained=False, progress=True, num_classes=2, aux_loss=False)
     params_to_optimize = [{'params': []}]
 
     for name, param in model.named_parameters():
@@ -116,8 +124,8 @@ def main():
         collate_fn = collate_fn, drop_last = True, sampler = train_sampler)
 
     test_loader = torch.utils.data.DataLoader(
-        test_dataset, batch_size = 1,collate_fn = collate_fn,
-        num_workers = n_workers, sampler = test_sampler)
+        test_dataset, batch_size = batch_size,collate_fn = collate_fn,
+        num_workers = n_workers, sampler = test_sampler, drop_last = True)
 
 
     optimizer = torch.optim.SGD(
@@ -126,18 +134,22 @@ def main():
 
     model = model.to(device)
 
-
+    max_val_loss = torch.inf
+    print(F'STARTING TRAINING WITH {lr}')
     for epoch in range(1,n_epochs+1):
         print(f'-'*10 + f'EPOCH: {epoch}')
         tr_loss = train_one_epoch(model = model, optimizer = optimizer,
                                   dataloader = train_loader, criterion=criterion,
-                                  device = device)
+                                  device = device, params = params_to_optimize)
         tl = evaluate(model = model, dataloader = test_loader, criterion=criterion,
                       device = device, epoch = epoch, save_path = image_save_path)
+        writer.add_scalar("Loss/train", tr_loss, epoch)
+        writer.add_scalar("Loss/val", tl, epoch)
 
         print(f'TRAINING LOSS: {tr_loss}')
         print(f'TESTING  LOSS: {tl} ')
-        if epoch % 10 == 0:
+        if epoch > 10  and max_val_loss > tl:
+            max_val_loss = tl
             torch.save({'model': model.state_dict(),
                         'num_classes': n_classes,
                         'resolution' : (320, 320),

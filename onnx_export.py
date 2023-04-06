@@ -6,9 +6,10 @@ import argparse
 
 import torch
 import torchvision.models as models
+from resnet34.fcn_resnet import fcn_resnet34
 
-checkpoint_path = 'C:/Users/Andrii/PycharmProjects/segmentationTraining/models/model_30.pth'
-save_path = 'C:/Users/Andrii/PycharmProjects/segmentationTraining/models/model_30.onnx'
+checkpoint_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\models\resnet34\model_30.pth'
+save_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\models\resnet34\resnet34.onnx'
 
 # set the device
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -26,12 +27,14 @@ num_classes = checkpoint['num_classes']
 # create the model architecture
 print('using model:  ' + arch)
 print('num classes:  ' + str(num_classes))
+# Use this for convinient transition
+# model = models.segmentation.__dict__[arch](num_classes=num_classes,
+#                                            aux_loss=None,
+#                                            pretrained=False,
+#                                            export_onnx=True)
 
-model = models.segmentation.__dict__[arch](num_classes=num_classes,
-                                           aux_loss=None,
-                                           pretrained=False,
-                                           export_onnx=True)
-
+# otherwise use this:
+model = fcn_resnet34(pretrained=False, progress=True, num_classes = 2, aux_loss=False)
 # load the model weights
 model.load_state_dict(checkpoint['model'])
 

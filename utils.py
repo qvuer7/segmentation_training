@@ -54,3 +54,21 @@ def get_data_from_tensors(image, mask):
     mask2 = mask2.astype(np.float32)
 
     return image2, mask2
+
+
+
+if __name__ == '__main__':
+    import torchvision
+
+    model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=2)
+    params_to_optimize = [{'params': []}]
+
+    for name, param in model.named_parameters():
+        if 'backbone' in name:
+            param.requires_grad = False
+        else:
+            param.requires_grad = True
+            params_to_optimize[0]['params'].append(param)
+
+
+

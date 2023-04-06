@@ -14,13 +14,14 @@ import warnings
 warnings.filterwarnings("ignore")
 
 device = torch.device('cuda')
+learning_rates = [0.0001, 0.001, 0.01]
 n_classes = 2
 n_epochs = 31
 batch_size = 8
 lr = 0.01
 momentum = 0.9
 weight_decay = 0.01
-L1_lambda = 0.00001
+L1_lambda = 0.0001
 n_workers = 2
 image_save_path = '/content/images'
 model_save_path = '/content/checkpoints/'
@@ -130,33 +131,36 @@ def main():
         num_workers = n_workers, sampler = test_sampler, drop_last = True)
 
 
-    optimizer = torch.optim.SGD(
-        params_to_optimize,
-        lr=lr, momentum=momentum, weight_decay=weight_decay)
+
 
     model = model.to(device)
 
     max_val_loss = torch.inf
-    print(F'STARTING TRAINING WITH {lr}')
-    for epoch in range(1,n_epochs+1):
-        print(f'-'*10 + f'EPOCH: {epoch}')
-        tr_loss = train_one_epoch(model = model, optimizer = optimizer,
-                                  dataloader = train_loader, criterion=criterion,
-                                  device = device, params = params_to_optimize)
-        tl = evaluate(model = model, dataloader = test_loader, criterion=criterion,
-                      device = device, epoch = epoch, save_path = image_save_path)
-        writer.add_scalar("Loss/train", tr_loss, epoch)
-        writer.add_scalar("Loss/val", tl, epoch)
 
-        print(f'TRAINING LOSS: {tr_loss}')
-        print(f'TESTING  LOSS: {tl} ')
-        if epoch > 10  and max_val_loss > tl:
-            max_val_loss = tl
-            torch.save({'model': model.state_dict(),
-                        'num_classes': n_classes,
-                        'resolution' : (320, 320),
-                        'arch': 'fcn_resnet50'}, f'{model_save_path}/model_{epoch}.pth',
-                       )
+    for lr in learning_rates:
+        optimizer = torch.optim.SGD(
+            params_to_optimize,
+            lr=lr, momentum=momentum, weight_decay=weight_decay)
+        print(F'STARTING TRAINING WITH {lr}')
+        for epoch in range(1,n_epochs+1):
+            print(f'-'*10 + f'EPOCH: {epoch}')
+            tr_loss = train_one_epoch(model = model, optimizer = optimizer,
+                                      dataloader = train_loader, criterion=criterion,
+                                      device = device, params = params_to_optimize)
+            tl = evaluate(model = model, dataloader = test_loader, criterion=criterion,
+                          device = device, epoch = epoch, save_path = image_save_path)
+            writer.add_scalar(f"Loss/train_{lr}", tr_loss, epoch)
+            writer.add_scalar(f"Loss/val_{lr}", tl, epoch)
+
+            print(f'TRAINING LOSS: {tr_loss}')
+            print(f'TESTING  LOSS: {tl} ')
+            if  max_val_loss > tl:
+                max_val_loss = tl
+                torch.save({'model': model.state_dict(),
+                            'num_classes': n_classes,
+                            'resolution' : (320, 320),
+                            'arch': 'fcn_resnet50'}, f'{model_save_path}/model_{str(lr)}.pth',
+                           )
 
 if __name__ == '__main__':
     main()

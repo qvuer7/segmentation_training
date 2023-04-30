@@ -172,6 +172,7 @@ def main():
 
 
     model = model.to(device)
+    tr_loss = 0
 
     max_val_loss = torch.inf
     for L1_lambda in L1_lambdas:
@@ -180,6 +181,7 @@ def main():
                 params_to_optimize,
                 lr=lr, momentum=momentum, weight_decay=weight_decay)
             print(f'L1: {L1_lambda} | LR: {lr} | best val: {max_val_loss}')
+            print(f'training loss: {tr_loss}')
             for epoch in range(1,n_epochs+1):
 
                 tr_loss = train_one_epoch(model = model, optimizer = optimizer,
@@ -193,7 +195,10 @@ def main():
 
 
                 if  max_val_loss > tl:
-                    os.remove(model_best_path)
+                    try:
+                        os.remove(model_best_path)
+                    except Exception as e:
+                        pass
                     max_val_loss = tl
                     torch.save({'model': model.state_dict(),
                                 'num_classes': n_classes,

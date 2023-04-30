@@ -80,7 +80,7 @@ def evaluate(model, criterion, dataloader, device, epoch, save_path):
 def criterion(inputs, target):
     losses = {}
     for name, x in inputs.items():
-        losses[name] = nn.functional.cross_entropy(x, target, ignore_index = 255)
+        losses[name] = nn.functional.cross_entropy(x, target, ignore_index = 255, )
 
 
     if len(losses) == 1:
@@ -96,7 +96,7 @@ def main():
         if name.islower() and not name.startswith("__")
         and callable(torchvision.models.segmentation.__dict__[name]))
 
-    weights = torchvision.models.ResNet50_Weights
+    weights = torchvision.models.ResNet50_Weights.DEFAULT
     model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes = n_classes, weights_backbone = weights)
     #model = fcn_resnet34(pretrained=False, progress=True, num_classes=2, aux_loss=False)
     params_to_optimize = [{'params': []}]

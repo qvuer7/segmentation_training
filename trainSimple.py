@@ -30,7 +30,7 @@ dataset_path    = '/content/drive/MyDrive/segmentation_dataset_24_01'
 
 writer = SummaryWriter()
 
-loss_type = 'BCE'
+loss_type = 'CE'
 
 def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_lambda):
     model.train()
@@ -68,7 +68,7 @@ def evaluate(model, criterion, dataloader, device, epoch, save_path):
             out = model(image)
             loss = criterion(out, target)
             tl+= loss.item()
-            if (epoch % 10 == 0) and (saved == 0):
+            if (epoch % 10 == 0) and (saved == 16):
                 image = image.squeeze().cpu()
                 out = out['out'].squeeze().cpu()
                 out = out.argmax(1)

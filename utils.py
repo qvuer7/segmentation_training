@@ -1,12 +1,13 @@
 import transforms as T
 import numpy as np
-
+import torch
 
 def get_transform(train, resolution):
     transforms = []
 
     # if square resolution, perform some aspect cropping
     # otherwise, resize to the resolution as specified
+
     if resolution[0] == resolution[1]:
         base_size = resolution[0] + 32 #520
         crop_size = resolution[0]      #480
@@ -22,11 +23,18 @@ def get_transform(train, resolution):
             transforms.append(T.RandomCrop(crop_size))
             transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation=0.3, hue=0.4, probability = 0.23))
     else:
-        transforms.append(T.Resize(resolution))
 
+
+        rate = 1
+
+        if torch.rand(1)  < rate:
+            min_size = int((0.75 if train else 1.0) * 320)
+        else:
+            min_size = 320
+        transforms.append(T.RandomResize2((resolution), min_size))
         if train:
             transforms.append(T.RandomHorizontalFlip(0.5))
-            transforms.append(T.ColorJitter(brightness=0.2, contrast=0.2, saturation = 0.2, hue = 0.2, probability = 0.3))
+            transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation = 0.3, hue = 0.4, probability = 0.23))
 
     transforms.append(T.ToTensor())
     transforms.append(T.Normalize(mean=[0.485, 0.456, 0.406],

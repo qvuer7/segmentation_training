@@ -20,7 +20,14 @@ def pad_if_smaller(img, size, fill=0):
         padw = size - ow if ow < size else 0
         img = F.pad(img, (0, 0, padw, padh), fill=fill)
     return img
+def pad_if_smaller2(img, sizex, sizey, fill =0):
+    min_size = min(img.size)
 
+    ow, oh = img.size
+    padh = sizey - oh if oh < sizey else 0
+    padw = sizex - ow if ow < sizex else 0
+    img = F.pad(img, (0, 0, padw, padh), fill=fill)
+    return img
 
 class Compose(object):
     def __init__(self, transforms):
@@ -78,7 +85,36 @@ class RandomCrop(object):
         target = F.crop(target, *crop_params)
         return image, target
 
+class RandomCrop2(object):
+    def __init__(self, sizex, original_size):
+        self.sizex = sizex
+        self.original_size = original_size
+    def __call__(self, image, target):
+        aspect_ratio = self.original_size[0] / self.original_size[1]
+        sizey = int(self.sizex / aspect_ratio)
 
+        image = pad_if_smaller2(image, self.sizex, sizey)
+        target = pad_if_smaller2(target, self.sizex,sizey, fill =  0)
+
+        crop_params = T.RandomCrop.get_params(image, (self.sizex, sizey))
+        image = F.crop(image, *crop_params)
+        target = F.crop(target, *crop_params)
+        return image, target
+
+class RandomResize2(object):
+    def __init__(self, original_size, min_edge_size):
+        self.original_size = original_size
+        self.min_edge_size = min_edge_size
+
+    def __call__(self, image, label):
+        aspect_ratio = self.original_size[0]/self.original_size[1]
+
+
+        max_target_size = int(self.min_edge_size/aspect_ratio)
+        image = F.resize(image, (self.min_edge_size, max_target_size))
+        target = F.resize(label, (self.min_edge_size, max_target_size), interpolation=Image.NEAREST)
+
+        return image, target
 class CenterCrop(object):
     def __init__(self, size):
         self.size = size
@@ -104,9 +140,6 @@ class Normalize(object):
     def __call__(self, image, target):
         image = F.normalize(image, mean=self.mean, std=self.std)
         return image, target
-
-
-
 
 
 

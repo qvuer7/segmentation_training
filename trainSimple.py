@@ -16,14 +16,14 @@ import os
 warnings.filterwarnings("ignore")
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-learning_rates = [0.001, 0.05, 0.1]
+learning_rates = [0.001, 0.005, 0.01]
 n_classes = 2
 n_epochs = 51
 batch_size = 6
 
 momentum = 0.9
 weight_decay = 0.01
-L1_lambdas = [0,0.01]
+L1_lambdas = [0,0.001, 0.1]
 n_workers = 2
 image_save_path = '/content/images'
 model_save_path = '/content/checkpoints/'

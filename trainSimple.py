@@ -14,20 +14,20 @@ import warnings
 warnings.filterwarnings("ignore")
 
 device = torch.device('cuda')
-learning_rates = [0.01, 0.05, 0.1]
+learning_rates = [0.05, 0.08]
 n_classes = 2
-n_epochs = 31
+n_epochs = 40
 batch_size = 6
 
 momentum = 0.9
 weight_decay = 0.01
-L1_lambda = 0.0001
+L1_lambdas = [0.0001, 0.001]
 n_workers = 2
 image_save_path = '/content/images'
 model_save_path = '/content/checkpoints/'
 dataset_path    = '/content/drive/MyDrive/segmentation_dataset_24_01'
 writer = SummaryWriter()
-def train_one_epoch(model, dataloader, optimizer,criterion, device, params):
+def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_lambda):
     model.train()
     tl = 0
     print('TRAINING')
@@ -109,7 +109,6 @@ def main():
 
 
     train_transform = get_transform('train', resolution=(320,320))
-    #train_transform = get_transform_train()
     test_transform  = get_transform(False, resolution = (320,320))
 
     train_dataset = CustomSegmentation(root_dir = dataset_path
@@ -136,30 +135,30 @@ def main():
     model = model.to(device)
 
     max_val_loss = torch.inf
+    for L1_lambda in L1_lambdas:
+        for lr in learning_rates:
+            optimizer = torch.optim.SGD(
+                params_to_optimize,
+                lr=lr, momentum=momentum, weight_decay=weight_decay)
 
-    for lr in learning_rates:
-        optimizer = torch.optim.SGD(
-            params_to_optimize,
-            lr=lr, momentum=momentum, weight_decay=weight_decay)
+            for epoch in range(1,n_epochs+1):
 
-        for epoch in range(1,n_epochs+1):
-
-            tr_loss = train_one_epoch(model = model, optimizer = optimizer,
-                                      dataloader = train_loader, criterion=criterion,
-                                      device = device, params = params_to_optimize)
-            tl = evaluate(model = model, dataloader = test_loader, criterion=criterion,
-                          device = device, epoch = epoch, save_path = image_save_path)
-            writer.add_scalar(f"Loss/train_{lr}", tr_loss, epoch)
-            writer.add_scalar(f"Loss/val_{lr}", tl, epoch)
+                tr_loss = train_one_epoch(model = model, optimizer = optimizer,
+                                          dataloader = train_loader, criterion=criterion,
+                                          device = device, params = params_to_optimize, L1_lambda = L1_lambda)
+                tl = evaluate(model = model, dataloader = test_loader, criterion=criterion,
+                              device = device, epoch = epoch, save_path = image_save_path)
+                writer.add_scalar(f"Loss/train_lr({lr})_l1({L1_lambda})", tr_loss, epoch)
+                writer.add_scalar(f"Loss/val_lr({lr})_l1({L1_lambda})", tl, epoch)
 
 
-            if  max_val_loss > tl:
-                max_val_loss = tl
-                torch.save({'model': model.state_dict(),
-                            'num_classes': n_classes,
-                            'resolution' : (320, 320),
-                            'arch': 'fcn_resnet50'}, f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}.pth',
-                           )
+                if  max_val_loss > tl:
+                    max_val_loss = tl
+                    torch.save({'model': model.state_dict(),
+                                'num_classes': n_classes,
+                                'resolution' : (320, 320),
+                                'arch': 'fcn_resnet50'}, f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}.pth',
+                               )
 
 if __name__ == '__main__':
     dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01'

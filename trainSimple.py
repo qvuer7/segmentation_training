@@ -36,7 +36,7 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
     model.train()
     tl = 0
     print('TRAINING')
-    for c, (image, target) in enumerate(dataloader):
+    for c, (image, target) in tqdm(enumerate(dataloader)):
 
 
         image, target = image.to(device), target.to(device)
@@ -62,7 +62,7 @@ def evaluate(model, criterion, dataloader, device, epoch, save_path):
     tl = 0
     saved = 0
     with torch.no_grad():
-        for c, (image, target) in enumerate(dataloader):
+        for c, (image, target) in tqdm(enumerate(dataloader)):
             image, target = image.to(device), target.to(device)
             out = model(image)
             loss = criterion(out, target)
@@ -106,15 +106,13 @@ def BCECriterion(out, targets):
     flattened_segmentation_mask = torch.sigmoid(flattened_segmentation_mask)
     flattened_target = targets.view(batch_size, -1).float()
 
-    # Create the BCE loss function
     criterion = nn.BCELoss(reduction = 'none')
 
-    # Compute the BCE loss
     loss = criterion(flattened_segmentation_mask, flattened_target)
-    loss.requires_grad = True
+
     # Optionally compute the average loss across batches and samples
     average_loss = loss.mean()
-
+    loss.requires_grad = True
     return average_loss
 
 
@@ -146,8 +144,9 @@ def main():
 
 
 
+
     train_transform = get_transform('train', resolution=(480,640))
-    test_transform  = get_transform(False, resolution = (480, 640))
+    test_transform  = get_transform(False, resolution = (480,640))
 
     train_dataset = CustomSegmentation(root_dir = dataset_path
                                        , image_set = 'train',
@@ -179,7 +178,7 @@ def main():
                 params_to_optimize,
                 lr=lr, momentum=momentum, weight_decay=weight_decay)
             print(f'L1: {L1_lambda} | LR: {lr} | best val: {max_val_loss}')
-            for epoch in tqdm(range(1,n_epochs+1)):
+            for epoch in range(1,n_epochs+1):
 
                 tr_loss = train_one_epoch(model = model, optimizer = optimizer,
                                           dataloader = train_loader, criterion=criterion,

@@ -23,7 +23,7 @@ batch_size = 6
 
 momentum = 0.9
 weight_decay = 0.01
-L1_lambdas = [0,0.001, 0.1]
+L1_lambdas = [0.1, 0.01, 0.001]
 n_workers = 2
 image_save_path = '/content/images'
 model_save_path = '/content/checkpoints/'

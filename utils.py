@@ -21,7 +21,7 @@ def get_transform(train, resolution, background_path):
         if train:
             transforms.append(T.RandomHorizontalFlip(0.5))
             transforms.append(T.RandomCrop(crop_size))
-            transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation=0.3, hue=0.4, probability = 0.23))
+            transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation=0.3, hue=0.4, probability = 0))
     else:
 
 

@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import torchvision
 import torch
 from dataset import CustomSegmentation
@@ -14,9 +15,9 @@ import os
 
 warnings.filterwarnings("ignore")
 
-device = torch.device('cuda')
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 learning_rates = [0.05, 0.08]
-n_classes = 2
+n_classes = 1
 n_epochs = 40
 batch_size = 6
 
@@ -24,10 +25,12 @@ momentum = 0.9
 weight_decay = 0.01
 L1_lambdas = [0.0001, 0.001]
 n_workers = 2
-image_save_path = '/content/images'
-model_save_path = '/content/checkpoints/'
-dataset_path    = '/content/drive/MyDrive/segmentation_dataset_24_01'
-
+# image_save_path = '/content/images'
+# model_save_path = '/content/checkpoints/'
+# dataset_path    = '/content/drive/MyDrive/segmentation_dataset_24_01'
+model_save_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\\'
+dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01\\'
+image_save_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\temp_images'
 writer = SummaryWriter()
 
 loss_type = 'CE'
@@ -68,13 +71,25 @@ def evaluate(model, criterion, dataloader, device, epoch, save_path):
             out = model(image)
             loss = criterion(out, target)
             tl+= loss.item()
-            if (epoch % 10 == 0) and (saved == 16):
+            if  (epoch % 5 == 0)  and (c % 6 == 0 ):
                 image = image.squeeze().cpu()
                 out = out['out'].squeeze().cpu()
-                out = out.argmax(1)
-                i, m = get_data_from_tensors(image, out)
-                cv2.imwrite(f'{save_path}/{epoch}_image.jpg', i)
-                cv2.imwrite(f'{save_path}/{epoch}_mask.jpg',m)
+                print(image.shape)
+                i = image[0].permute(1,2,0).numpy()
+                m = out[0].numpy()
+                min_value = i.min()
+                max_value = i.max()
+                new_min = 0
+                new_max = 255
+                i = (i - min_value) * (new_max / (max_value - min_value))
+                i = i.astype(np.uint8)
+
+                # cv2.imwrite(f'{save_path}/{epoch}_image.jpg', i)
+                # cv2.imwrite(f'{save_path}/{epoch}_mask.jpg',m)
+                fig, (ax1, ax2) = plt.subplots(1,2)
+                ax1.imshow(i)
+                ax2.imshow(m)
+                plt.savefig(f'{save_path}/{epoch}_{c}.jpg')
                 print('IMAGE SAVED')
                 saved = 1
 
@@ -89,7 +104,7 @@ def CECriterion(inputs, target):
 
 
     if len(losses) == 1:
-        print('only one loss is used')
+
         return losses['out']
 
     return losses['out'] + 0.5 * losses['aux']
@@ -131,17 +146,17 @@ def main():
         if name.islower() and not name.startswith("__")
         and callable(torchvision.models.segmentation.__dict__[name]))
 
-    weights = torchvision.models.ResNet50_Weights
-    model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes = n_classes, weights_backbone = weights)
-    #model = fcn_resnet34(pretrained=False, progress=True, num_classes=2, aux_loss=False)
-    params_to_optimize = [{'params': []}]
-
-    for name, param in model.named_parameters():
-        if 'backbone' in name:
-            param.requires_grad = False
-        else:
-            param.requires_grad = True
-            params_to_optimize[0]['params'].append(param)
+    # weights = torchvision.models.ResNet50_Weights
+    # model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes = n_classes, weights_backbone = weights)
+    # #model = fcn_resnet34(pretrained=False, progress=True, num_classes=2, aux_loss=False)
+    # params_to_optimize = [{'params': []}]
+    #
+    # for name, param in model.named_parameters():
+    #     if 'backbone' in name:
+    #         param.requires_grad = False
+    #     else:
+    #         param.requires_grad = True
+    #         params_to_optimize[0]['params'].append(param)
 
 
 
@@ -171,12 +186,25 @@ def main():
 
 
 
-    model = model.to(device)
+    # model = model.to(device)
     tr_loss = 0
 
     max_val_loss = torch.inf
     for L1_lambda in L1_lambdas:
         for lr in learning_rates:
+            weights = torchvision.models.ResNet50_Weights
+            model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes,
+                                                                             weights_backbone=weights)
+            # model = fcn_resnet34(pretrained=False, progress=True, num_classes=2, aux_loss=False)
+            params_to_optimize = [{'params': []}]
+
+            for name, param in model.named_parameters():
+                if 'backbone' in name:
+                    param.requires_grad = False
+                else:
+                    param.requires_grad = True
+                    params_to_optimize[0]['params'].append(param)
+            model = model.to(device)
             optimizer = torch.optim.SGD(
                 params_to_optimize,
                 lr=lr, momentum=momentum, weight_decay=weight_decay)
@@ -209,30 +237,38 @@ def main():
                     model_best_path = f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}_loss{max_val_loss}.pth'
 
 if __name__ == '__main__':
-    main()
-    # dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01'
-    # train_transform = get_transform('train', resolution=(480,640))
-    # test_transform  = get_transform(False, resolution = (480,640))
-    #
-    # train_dataset = CustomSegmentation(root_dir = dataset_path
-    #                                    , image_set = 'train',
-    #                                    transforms = train_transform)
-    # train_sampler = torch.utils.data.RandomSampler(train_dataset)
-    # train_loader = torch.utils.data.DataLoader(
-    #     train_dataset, batch_size = batch_size,num_workers = n_workers,
-    #     collate_fn = collate_fn, drop_last = True, sampler = train_sampler)
-    #
-    # import matplotlib.pyplot as plt
-    # for idx, (image_batch, label_batch) in enumerate(train_loader):
-    #     break
-    #
-    #
-    #
-    #
-    # weights = torchvision.models.ResNet50_Weights
-    # model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes, weights_backbone=weights)
-    # with torch.no_grad():
-    #     out = model(image_batch)
+    # main()
+    dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01'
+    train_transform = get_transform('train', resolution=(480,640))
+    test_transform  = get_transform(False, resolution = (480,640))
+
+    train_dataset = CustomSegmentation(root_dir = dataset_path
+                                       , image_set = 'train',
+                                       transforms = train_transform)
+    test_dataset  = CustomSegmentation(root_dir = dataset_path,
+                                       image_set = 'val',
+                                       transforms = test_transform)
+
+    train_sampler = torch.utils.data.RandomSampler(train_dataset)
+    test_sampler = torch.utils.data.SequentialSampler(test_dataset)
+
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset, batch_size = batch_size,num_workers = n_workers,
+        collate_fn = collate_fn, drop_last = True, sampler = train_sampler)
+
+    test_loader = torch.utils.data.DataLoader(
+        test_dataset, batch_size = batch_size,collate_fn = collate_fn,
+        num_workers = n_workers, sampler = test_sampler, drop_last = True)
+
+
+
+
+
+    weights = torchvision.models.ResNet50_Weights
+    model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes, weights_backbone=weights)
+
+    a =  evaluate(model = model, criterion= BCECriterion, dataloader= test_loader, device = torch.device('cpu'), epoch = 1, save_path=image_save_path)
+
     #
     # CELoss = BCECriterion(out, label_batch)
     # print(CELoss.requires_grad)

@@ -60,7 +60,7 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
 
     return tl/c
 
-def evaluate(model, criterion, dataloader, device, epoch, save_path):
+def evaluate(model, criterion, dataloader, device, epoch, save_path, l1, lr):
     model.eval()
     print('EVALUATING')
     tl = 0
@@ -71,12 +71,13 @@ def evaluate(model, criterion, dataloader, device, epoch, save_path):
             out = model(image)
             loss = criterion(out, target)
             tl+= loss.item()
-            if  (epoch % 5 == 0)  and (c % 6 == 0 ):
+            #if  (epoch % 5 == 0)  and (c % 6 == 0 ):
+            if (epoch % 5 == 0) and (c % 9 == 0):
                 image = image.squeeze().cpu()
                 out = out['out'].squeeze().cpu()
-                print(image.shape)
                 i = image[0].permute(1,2,0).numpy()
-                m = out[0].numpy()
+                m = out[0].argmax(dim = 0).numpy()
+
                 min_value = i.min()
                 max_value = i.max()
                 new_min = 0
@@ -89,7 +90,7 @@ def evaluate(model, criterion, dataloader, device, epoch, save_path):
                 fig, (ax1, ax2) = plt.subplots(1,2)
                 ax1.imshow(i)
                 ax2.imshow(m)
-                plt.savefig(f'{save_path}/{epoch}_{c}.jpg')
+                plt.savefig(f'{save_path}/{epoch}_l1({l1})_lr({lr})_{c}.jpg')
                 print('IMAGE SAVED')
                 saved = 1
 
@@ -216,7 +217,7 @@ def main():
                                           dataloader = train_loader, criterion=criterion,
                                           device = device, params = params_to_optimize, L1_lambda = L1_lambda)
                 tl = evaluate(model = model, dataloader = test_loader, criterion=criterion,
-                              device = device, epoch = epoch, save_path = image_save_path)
+                              device = device, epoch = epoch, save_path = image_save_path, lr = lr, l1 = L1_lambda)
 
                 writer.add_scalar(f"Loss/train_lr({lr})_l1({L1_lambda})", tr_loss, epoch)
                 writer.add_scalar(f"Loss/val_lr({lr})_l1({L1_lambda})", tl, epoch)
@@ -267,9 +268,10 @@ if __name__ == '__main__':
     # weights = torchvision.models.ResNet50_Weights
     # model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes, weights_backbone=weights)
     #
-    # a =  evaluate(model = model, criterion= BCECriterion, dataloader= test_loader, device = torch.device('cpu'), epoch = 1, save_path=image_save_path)
-
+    # a =  evaluate(model = model, criterion= BCECriterion, dataloader= test_loader, device = torch.device('cpu'),
+    #               epoch = 1, save_path=image_save_path, lr = 12,l1 =2 )
     #
+
     # CELoss = BCECriterion(out, label_batch)
     # print(CELoss.requires_grad)
     #

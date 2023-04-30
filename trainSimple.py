@@ -49,6 +49,7 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
 
         loss = criterion(out, target)
         loss += total_l1_loss
+        loss.requires_grad_(True)
         tl+=loss.item()
         optimizer.zero_grad()
         loss.backward()
@@ -112,7 +113,7 @@ def BCECriterion(out, targets):
 
     # Optionally compute the average loss across batches and samples
     average_loss = loss.mean()
-    average_loss.requires_grad_(True)
+
 
     return average_loss
 

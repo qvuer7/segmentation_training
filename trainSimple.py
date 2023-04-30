@@ -181,7 +181,7 @@ def main():
                 params_to_optimize,
                 lr=lr, momentum=momentum, weight_decay=weight_decay)
             print(f'L1: {L1_lambda} | LR: {lr} | best val: {max_val_loss}')
-            print(f'training loss: {tr_loss}')
+
             for epoch in range(1,n_epochs+1):
 
                 tr_loss = train_one_epoch(model = model, optimizer = optimizer,
@@ -193,6 +193,7 @@ def main():
                 writer.add_scalar(f"Loss/train_lr({lr})_l1({L1_lambda})", tr_loss, epoch)
                 writer.add_scalar(f"Loss/val_lr({lr})_l1({L1_lambda})", tl, epoch)
 
+                print(f'TR : {tr_loss}  |  VAL : {tl}')
 
                 if  max_val_loss > tl:
                     try:
@@ -203,9 +204,9 @@ def main():
                     torch.save({'model': model.state_dict(),
                                 'num_classes': n_classes,
                                 'resolution' : (320, 320),
-                                'arch': 'fcn_resnet50'}, f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}.pth',
+                                'arch': 'fcn_resnet50'}, f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}_loss{max_val_loss}.pth',
                                )
-                    model_best_path = f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}.pth'
+                    model_best_path = f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}_loss{max_val_loss}.pth'
 
 if __name__ == '__main__':
     main()

@@ -10,6 +10,7 @@ from resnet34.fcn_resnet import fcn_resnet34
 from torch.utils.tensorboard import SummaryWriter
 from utils import get_transform_train
 import warnings
+import os
 
 warnings.filterwarnings("ignore")
 
@@ -31,7 +32,7 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
     model.train()
     tl = 0
     print('TRAINING')
-    for c, (image, target) in tqdm(enumerate(dataloader)):
+    for c, (image, target) in enumerate(dataloader):
 
 
         image, target = image.to(device), target.to(device)
@@ -57,7 +58,7 @@ def evaluate(model, criterion, dataloader, device, epoch, save_path):
     tl = 0
     saved = 4
     with torch.no_grad():
-        for c, (image, target) in tqdm(enumerate(dataloader)):
+        for c, (image, target) in enumerate(dataloader):
             image, target = image.to(device), target.to(device)
             out = model(image)
             loss = criterion(out, target)
@@ -79,9 +80,11 @@ def evaluate(model, criterion, dataloader, device, epoch, save_path):
 def criterion(inputs, target):
     losses = {}
     for name, x in inputs.items():
-        losses[name] = nn.functional.cross_entropy(x, target, ignore_index=255)
+        losses[name] = nn.functional.binary_cross_entropy(x, target)
+
 
     if len(losses) == 1:
+
         return losses['out']
 
     return losses['out'] + 0.5 * losses['aux']
@@ -140,8 +143,8 @@ def main():
             optimizer = torch.optim.SGD(
                 params_to_optimize,
                 lr=lr, momentum=momentum, weight_decay=weight_decay)
-
-            for epoch in range(1,n_epochs+1):
+            print(f'L1: {L1_lambda} | LR: {lr} | best val: {max_val_loss}')
+            for epoch in tqdm(range(1,n_epochs+1)):
 
                 tr_loss = train_one_epoch(model = model, optimizer = optimizer,
                                           dataloader = train_loader, criterion=criterion,
@@ -153,47 +156,50 @@ def main():
 
 
                 if  max_val_loss > tl:
+                    os.remove(model_best_path)
                     max_val_loss = tl
                     torch.save({'model': model.state_dict(),
                                 'num_classes': n_classes,
                                 'resolution' : (320, 320),
                                 'arch': 'fcn_resnet50'}, f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}.pth',
                                )
+                    model_best_path = f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}.pth'
 
 if __name__ == '__main__':
-    dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01'
-    train_transform = get_transform('train', resolution=(320,320))
-    test_transform  = get_transform(False, resolution = (320,320))
-
-    train_dataset = CustomSegmentation(root_dir = dataset_path
-                                       , image_set = 'train',
-                                       transforms = train_transform)
-    train_sampler = torch.utils.data.RandomSampler(train_dataset)
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size = batch_size,num_workers = n_workers,
-        collate_fn = collate_fn, drop_last = True, sampler = train_sampler)
-
-    import matplotlib.pyplot as plt
-    for idx, (image_batch, label_batch) in enumerate(train_loader):
-
-
-
-        for image, label in zip(image_batch, label_batch):
-            image = image.numpy()
-            label  = label.numpy()
-            image = image.transpose(1,2,0)
-
-            min_value = image.min()
-            max_value = image.max()
-            new_min = 0
-            new_max = 255
-
-            image = (image - min_value) * (new_max / (max_value - min_value))
-            image = image.astype(np.uint8)
-            fig, (ax1, ax2) = plt.subplots(1,2)
-            ax1.imshow(image)
-            ax2.imshow(label)
-            plt.show()
+    main()
+    # dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01'
+    # train_transform = get_transform('train', resolution=(320,320))
+    # test_transform  = get_transform(False, resolution = (320,320))
+    #
+    # train_dataset = CustomSegmentation(root_dir = dataset_path
+    #                                    , image_set = 'train',
+    #                                    transforms = train_transform)
+    # train_sampler = torch.utils.data.RandomSampler(train_dataset)
+    # train_loader = torch.utils.data.DataLoader(
+    #     train_dataset, batch_size = batch_size,num_workers = n_workers,
+    #     collate_fn = collate_fn, drop_last = True, sampler = train_sampler)
+    #
+    # import matplotlib.pyplot as plt
+    # for idx, (image_batch, label_batch) in enumerate(train_loader):
+    #
+    #
+    #
+    #     for image, label in zip(image_batch, label_batch):
+    #         image = image.numpy()
+    #         label  = label.numpy()
+    #         image = image.transpose(1,2,0)
+    #
+    #         min_value = image.min()
+    #         max_value = image.max()
+    #         new_min = 0
+    #         new_max = 255
+    #
+    #         image = (image - min_value) * (new_max / (max_value - min_value))
+    #         image = image.astype(np.uint8)
+    #         fig, (ax1, ax2) = plt.subplots(1,2)
+    #         ax1.imshow(image)
+    #         ax2.imshow(label)
+    #         plt.show()
 
 
 

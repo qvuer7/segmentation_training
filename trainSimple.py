@@ -23,7 +23,7 @@ batch_size = 6
 
 momentum = 0.9
 weight_decay = 0.01
-L1_lambdas = [0.1, 0.01, 0.001]
+L1_lambdas = [0.2, 0.1, 0.001]
 n_workers = 2
 image_save_path = '/content/images'
 model_save_path = '/content/checkpoints/'
@@ -279,9 +279,9 @@ if __name__ == '__main__':
     #     ax2.imshow(label)
     #     plt.show()
     #
-    #
-    #
-    #
+
+
+
     # weights = torchvision.models.ResNet50_Weights
     # model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes, weights_backbone=weights)
     #

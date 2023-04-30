@@ -203,7 +203,8 @@ class BackgroundSubstitution(object):
         self.background_path = background_path
         self.background_photos = os.listdir(background_path)
     def __call__(self, image, target):
-        p = torch.randn(1)
+        p = torch.rand(1)
+        print(p)
         if p < self.rate:
             v = np.random.randint(1, len(self.background_photos) - 2)
             self.background = Image.open(self.background_path + self.background_photos[v])

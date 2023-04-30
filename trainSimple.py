@@ -111,7 +111,7 @@ def BCECriterion(out, targets):
 
     # Compute the BCE loss
     loss = criterion(flattened_segmentation_mask, flattened_target)
-
+    loss.requires_grad = True
     # Optionally compute the average loss across batches and samples
     average_loss = loss.mean()
 
@@ -146,8 +146,8 @@ def main():
 
 
 
-    train_transform = get_transform('train', resolution=(320,320))
-    test_transform  = get_transform(False, resolution = (320,320))
+    train_transform = get_transform('train', resolution=(480,640))
+    test_transform  = get_transform(False, resolution = (480, 640))
 
     train_dataset = CustomSegmentation(root_dir = dataset_path
                                        , image_set = 'train',
@@ -186,10 +186,6 @@ def main():
                                           device = device, params = params_to_optimize, L1_lambda = L1_lambda)
                 tl = evaluate(model = model, dataloader = test_loader, criterion=criterion,
                               device = device, epoch = epoch, save_path = image_save_path)
-
-
-
-
 
                 writer.add_scalar(f"Loss/train_lr({lr})_l1({L1_lambda})", tr_loss, epoch)
                 writer.add_scalar(f"Loss/val_lr({lr})_l1({L1_lambda})", tl, epoch)

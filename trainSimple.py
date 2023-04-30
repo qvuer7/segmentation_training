@@ -18,12 +18,12 @@ warnings.filterwarnings("ignore")
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 learning_rates = [0.001, 0.05, 0.1]
 n_classes = 2
-n_epochs = 40
+n_epochs = 51
 batch_size = 6
 
 momentum = 0.9
 weight_decay = 0.01
-L1_lambdas = [0.1, 0.001]
+L1_lambdas = [0,0.01]
 n_workers = 2
 image_save_path = '/content/images'
 model_save_path = '/content/checkpoints/'
@@ -241,8 +241,9 @@ def main():
 if __name__ == '__main__':
     main()
     # dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01'
-    # train_transform = get_transform('train', resolution=(480,640))
-    # test_transform  = get_transform(False, resolution = (480,640))
+    # background_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\background\\'
+    # train_transform = get_transform('train', resolution=(480,640), background_path=background_path)
+    # test_transform  = get_transform(False, resolution = (480,640), background_path=background_path)
     #
     # train_dataset = CustomSegmentation(root_dir = dataset_path
     #                                    , image_set = 'train',
@@ -255,7 +256,7 @@ if __name__ == '__main__':
     # test_sampler = torch.utils.data.SequentialSampler(test_dataset)
     #
     # train_loader = torch.utils.data.DataLoader(
-    #     train_dataset, batch_size = batch_size,num_workers = n_workers,
+    #     train_dataset, batch_size = 40,num_workers = n_workers,
     #     collate_fn = collate_fn, drop_last = True, sampler = train_sampler)
     #
     # test_loader = torch.utils.data.DataLoader(

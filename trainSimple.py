@@ -25,12 +25,12 @@ momentum = 0.9
 weight_decay = 0.01
 L1_lambdas = [0.1, 0.001]
 n_workers = 2
-# image_save_path = '/content/images'
-# model_save_path = '/content/checkpoints/'
-# dataset_path    = '/content/drive/MyDrive/segmentation_dataset_24_01'
-model_save_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\\'
-dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01\\'
-image_save_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\temp_images'
+image_save_path = '/content/images'
+model_save_path = '/content/checkpoints/'
+dataset_path    = '/content/drive/MyDrive/segmentation_dataset_24_01'
+# model_save_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\\'
+# dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01\\'
+# image_save_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\temp_images'
 writer = SummaryWriter()
 
 loss_type = 'CE'
@@ -232,9 +232,9 @@ def main():
                     torch.save({'model': model.state_dict(),
                                 'num_classes': n_classes,
                                 'resolution' : (320, 320),
-                                'arch': 'fcn_resnet50'}, f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}_loss{max_val_loss}.pth',
+                                'arch': 'fcn_resnet50'}, f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}_loss{round(max_val_loss,4)}.pth',
                                )
-                    model_best_path = f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}_loss{max_val_loss}.pth'
+                    model_best_path = f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}_loss{round(max_val_loss,4)}.pth'
 
 if __name__ == '__main__':
     main()

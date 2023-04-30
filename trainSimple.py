@@ -52,7 +52,7 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
 
         loss = criterion(out, target)
         loss += total_l1_loss
-        loss.requires_grad_(True)
+
         tl+=loss.item()
         optimizer.zero_grad()
         loss.backward()

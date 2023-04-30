@@ -16,14 +16,14 @@ import os
 warnings.filterwarnings("ignore")
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-learning_rates = [0.05, 0.08]
+learning_rates = [0.001, 0.05, 0.1]
 n_classes = 1
 n_epochs = 40
 batch_size = 6
 
 momentum = 0.9
 weight_decay = 0.01
-L1_lambdas = [0.0001, 0.001]
+L1_lambdas = [0.1, 0.001]
 n_workers = 2
 # image_save_path = '/content/images'
 # model_save_path = '/content/checkpoints/'
@@ -237,37 +237,37 @@ def main():
                     model_best_path = f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}_loss{max_val_loss}.pth'
 
 if __name__ == '__main__':
-    # main()
-    dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01'
-    train_transform = get_transform('train', resolution=(480,640))
-    test_transform  = get_transform(False, resolution = (480,640))
-
-    train_dataset = CustomSegmentation(root_dir = dataset_path
-                                       , image_set = 'train',
-                                       transforms = train_transform)
-    test_dataset  = CustomSegmentation(root_dir = dataset_path,
-                                       image_set = 'val',
-                                       transforms = test_transform)
-
-    train_sampler = torch.utils.data.RandomSampler(train_dataset)
-    test_sampler = torch.utils.data.SequentialSampler(test_dataset)
-
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size = batch_size,num_workers = n_workers,
-        collate_fn = collate_fn, drop_last = True, sampler = train_sampler)
-
-    test_loader = torch.utils.data.DataLoader(
-        test_dataset, batch_size = batch_size,collate_fn = collate_fn,
-        num_workers = n_workers, sampler = test_sampler, drop_last = True)
-
-
-
-
-
-    weights = torchvision.models.ResNet50_Weights
-    model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes, weights_backbone=weights)
-
-    a =  evaluate(model = model, criterion= BCECriterion, dataloader= test_loader, device = torch.device('cpu'), epoch = 1, save_path=image_save_path)
+    main()
+    # dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01'
+    # train_transform = get_transform('train', resolution=(480,640))
+    # test_transform  = get_transform(False, resolution = (480,640))
+    #
+    # train_dataset = CustomSegmentation(root_dir = dataset_path
+    #                                    , image_set = 'train',
+    #                                    transforms = train_transform)
+    # test_dataset  = CustomSegmentation(root_dir = dataset_path,
+    #                                    image_set = 'val',
+    #                                    transforms = test_transform)
+    #
+    # train_sampler = torch.utils.data.RandomSampler(train_dataset)
+    # test_sampler = torch.utils.data.SequentialSampler(test_dataset)
+    #
+    # train_loader = torch.utils.data.DataLoader(
+    #     train_dataset, batch_size = batch_size,num_workers = n_workers,
+    #     collate_fn = collate_fn, drop_last = True, sampler = train_sampler)
+    #
+    # test_loader = torch.utils.data.DataLoader(
+    #     test_dataset, batch_size = batch_size,collate_fn = collate_fn,
+    #     num_workers = n_workers, sampler = test_sampler, drop_last = True)
+    #
+    #
+    #
+    #
+    #
+    # weights = torchvision.models.ResNet50_Weights
+    # model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes, weights_backbone=weights)
+    #
+    # a =  evaluate(model = model, criterion= BCECriterion, dataloader= test_loader, device = torch.device('cpu'), epoch = 1, save_path=image_save_path)
 
     #
     # CELoss = BCECriterion(out, label_batch)

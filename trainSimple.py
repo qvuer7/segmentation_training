@@ -106,13 +106,14 @@ def BCECriterion(out, targets):
     flattened_segmentation_mask = torch.sigmoid(flattened_segmentation_mask)
     flattened_target = targets.view(batch_size, -1).float()
 
-    criterion = nn.BCELoss(reduction = 'none')
+    criterion = nn.BCELoss(reduction='mean')
 
     loss = criterion(flattened_segmentation_mask, flattened_target)
 
     # Optionally compute the average loss across batches and samples
     average_loss = loss.mean()
-    loss.requires_grad = True
+    average_loss.requires_grad_(True)
+
     return average_loss
 
 
@@ -226,10 +227,10 @@ if __name__ == '__main__':
     # with torch.no_grad():
     #     out = model(image_batch)
     #
-    # CELoss = criterion(out, label_batch)
-    # BCELoss, BCEAverageLoss = BCECriterion(out, label_batch)
+    # CELoss = BCECriterion(out, label_batch)
+    # print(CELoss.requires_grad)
     #
-    #
+
     #
     #
     #

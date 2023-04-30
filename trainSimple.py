@@ -14,11 +14,11 @@ import warnings
 warnings.filterwarnings("ignore")
 
 device = torch.device('cuda')
-learning_rates = [0.0001, 0.001, 0.01]
+learning_rates = [0.01, 0.05, 0.1]
 n_classes = 2
 n_epochs = 31
-batch_size = 8
-lr = 0.01
+batch_size = 6
+
 momentum = 0.9
 weight_decay = 0.01
 L1_lambda = 0.0001
@@ -108,8 +108,8 @@ def main():
 
 
 
-    #train_transform = get_transform('train', resolution=(320,320))
-    train_transform = get_transform_train()
+    train_transform = get_transform('train', resolution=(320,320))
+    #train_transform = get_transform_train()
     test_transform  = get_transform(False, resolution = (320,320))
 
     train_dataset = CustomSegmentation(root_dir = dataset_path
@@ -141,9 +141,9 @@ def main():
         optimizer = torch.optim.SGD(
             params_to_optimize,
             lr=lr, momentum=momentum, weight_decay=weight_decay)
-        print(F'STARTING TRAINING WITH {lr}')
+
         for epoch in range(1,n_epochs+1):
-            print(f'-'*10 + f'EPOCH: {epoch}')
+
             tr_loss = train_one_epoch(model = model, optimizer = optimizer,
                                       dataloader = train_loader, criterion=criterion,
                                       device = device, params = params_to_optimize)
@@ -152,18 +152,50 @@ def main():
             writer.add_scalar(f"Loss/train_{lr}", tr_loss, epoch)
             writer.add_scalar(f"Loss/val_{lr}", tl, epoch)
 
-            print(f'TRAINING LOSS: {tr_loss}')
-            print(f'TESTING  LOSS: {tl} ')
+
             if  max_val_loss > tl:
                 max_val_loss = tl
                 torch.save({'model': model.state_dict(),
                             'num_classes': n_classes,
                             'resolution' : (320, 320),
-                            'arch': 'fcn_resnet50'}, f'{model_save_path}/model_{str(lr)}.pth',
+                            'arch': 'fcn_resnet50'}, f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}.pth',
                            )
 
 if __name__ == '__main__':
-    main()
+    dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01'
+    train_transform = get_transform('train', resolution=(320,320))
+    test_transform  = get_transform(False, resolution = (320,320))
+
+    train_dataset = CustomSegmentation(root_dir = dataset_path
+                                       , image_set = 'train',
+                                       transforms = train_transform)
+    train_sampler = torch.utils.data.RandomSampler(train_dataset)
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset, batch_size = batch_size,num_workers = n_workers,
+        collate_fn = collate_fn, drop_last = True, sampler = train_sampler)
+
+    import matplotlib.pyplot as plt
+    for idx, (image_batch, label_batch) in enumerate(train_loader):
+
+
+
+        for image, label in zip(image_batch, label_batch):
+            image = image.numpy()
+            label  = label.numpy()
+            image = image.transpose(1,2,0)
+
+            min_value = image.min()
+            max_value = image.max()
+            new_min = 0
+            new_max = 255
+
+            image = (image - min_value) * (new_max / (max_value - min_value))
+            image = image.astype(np.uint8)
+            fig, (ax1, ax2) = plt.subplots(1,2)
+            ax1.imshow(image)
+            ax2.imshow(label)
+            plt.show()
+
 
 
 

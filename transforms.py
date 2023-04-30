@@ -2,9 +2,14 @@ import numpy as np
 from PIL import Image
 import random
 
-import torch
+
 from torchvision import transforms as T
-from torchvision.transforms import functional as F
+import torchvision.transforms.functional as F
+import random
+import numpy as np
+import torch
+import torchvision.transforms as transforms
+from PIL import Image
 
 
 def pad_if_smaller(img, size, fill=0):
@@ -67,7 +72,7 @@ class RandomCrop(object):
 
     def __call__(self, image, target):
         image = pad_if_smaller(image, self.size)
-        target = pad_if_smaller(target, self.size, fill=255)
+        target = pad_if_smaller(target, self.size, fill=0)
         crop_params = T.RandomCrop.get_params(image, (self.size, self.size))
         image = F.crop(image, *crop_params)
         target = F.crop(target, *crop_params)
@@ -99,3 +104,60 @@ class Normalize(object):
     def __call__(self, image, target):
         image = F.normalize(image, mean=self.mean, std=self.std)
         return image, target
+
+
+
+
+
+
+
+class ColorJitter:
+    def __init__(self, brightness, contrast, saturation, hue, probability):
+        self.brightness = brightness
+        self.contrast = contrast
+        self.saturation = saturation
+        self.hue = hue
+        self.probability = probability
+    def __call__(self, image, label):
+        if torch.rand(1) <  self.probability:
+
+            if self.brightness > 0:
+                image = transforms.functional.adjust_brightness(image, 1.0 + random.uniform(-self.brightness, self.brightness))
+
+            if self.contrast > 0:
+                image = transforms.functional.adjust_contrast(image, 1.0 + random.uniform(-self.contrast, self.contrast))
+
+            if self.saturation > 0:
+                image = transforms.functional.adjust_saturation(image, 1.0 + random.uniform(-self.saturation, self.saturation))
+
+            if self.hue > 0:
+                image = self.apply_hue(image,label,  self.hue)
+
+        return image, label
+
+    @staticmethod
+    def apply_hue(image,label,  hue_factor):
+        if torch.rand(1) < 0.5:
+            hue_factor = -hue_factor
+
+
+        image = image.convert("HSV")
+        h, s, v = image.split()
+        l = np.asarray(label)
+        spear_coords = np.where(l == 255)
+
+
+
+        np_h = np.array(h)
+        ori = np_h.copy()
+        np_h = np.mod(np_h.astype(np.int16) + np.int16(hue_factor * 255), 256).astype(np.uint8)
+        if np.any(spear_coords[0]):
+            spear_coords_x, spear_coords_y = spear_coords[0], spear_coords[1]
+            np_h[spear_coords_x, spear_coords_y] = ori[spear_coords_x, spear_coords_y]
+        h = Image.fromarray(np_h, "L")
+
+        image = Image.merge("HSV", (h, s, v))
+        image = image.convert("RGB")
+
+
+        return image

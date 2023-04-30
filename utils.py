@@ -11,8 +11,8 @@ def get_transform(train, resolution):
         base_size = resolution[0] + 32 #520
         crop_size = resolution[0]      #480
 
-        min_size = int((0.5 if train else 1.0) * base_size)
-        max_size = int((2.0 if train else 1.0) * base_size)
+        min_size = int((0.75 if train else 1.0) * base_size)
+        max_size = int((1.25 if train else 1.0) * base_size)
 
         transforms.append(T.RandomResize(min_size, max_size))
 
@@ -20,11 +20,13 @@ def get_transform(train, resolution):
         if train:
             transforms.append(T.RandomHorizontalFlip(0.5))
             transforms.append(T.RandomCrop(crop_size))
+            transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation=0.3, hue=0.4, probability = 0.23))
     else:
         transforms.append(T.Resize(resolution))
 
         if train:
             transforms.append(T.RandomHorizontalFlip(0.5))
+            transforms.append(T.ColorJitter(brightness=0.2, contrast=0.2, saturation = 0.2, hue = 0.2, probability = 0.3))
 
     transforms.append(T.ToTensor())
     transforms.append(T.Normalize(mean=[0.485, 0.456, 0.406],

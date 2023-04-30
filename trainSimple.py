@@ -28,6 +28,7 @@ n_workers = 2
 image_save_path = '/content/images'
 model_save_path = '/content/checkpoints/'
 dataset_path    = '/content/drive/MyDrive/segmentation_dataset_24_01'
+background_path = '/content/drive/MyDrive/background/'
 # model_save_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\\'
 # dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01\\'
 # image_save_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\temp_images'
@@ -163,8 +164,8 @@ def main():
 
 
 
-    train_transform = get_transform('train', resolution=(480,640))
-    test_transform  = get_transform(False, resolution = (480,640))
+    train_transform = get_transform('train', resolution=(480,640), background_path=background_path)
+    test_transform  = get_transform(False, resolution = (480,640), background_path=background_path)
 
     train_dataset = CustomSegmentation(root_dir = dataset_path
                                        , image_set = 'train',
@@ -232,35 +233,50 @@ def main():
                     max_val_loss = tl
                     torch.save({'model': model.state_dict(),
                                 'num_classes': n_classes,
-                                'resolution' : (320, 320),
+                                'resolution' : (480, 640),
                                 'arch': 'fcn_resnet50'}, f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}_loss{round(max_val_loss,4)}.pth',
                                )
                     model_best_path = f'{model_save_path}/model_lr{str(lr)}_{str(epoch)}_l1{L1_lambda}_loss{round(max_val_loss,4)}.pth'
 
 if __name__ == '__main__':
-    main()
-    # dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01'
-    # train_transform = get_transform('train', resolution=(480,640))
-    # test_transform  = get_transform(False, resolution = (480,640))
-    #
-    # train_dataset = CustomSegmentation(root_dir = dataset_path
-    #                                    , image_set = 'train',
-    #                                    transforms = train_transform)
-    # test_dataset  = CustomSegmentation(root_dir = dataset_path,
-    #                                    image_set = 'val',
-    #                                    transforms = test_transform)
-    #
-    # train_sampler = torch.utils.data.RandomSampler(train_dataset)
-    # test_sampler = torch.utils.data.SequentialSampler(test_dataset)
-    #
-    # train_loader = torch.utils.data.DataLoader(
-    #     train_dataset, batch_size = batch_size,num_workers = n_workers,
-    #     collate_fn = collate_fn, drop_last = True, sampler = train_sampler)
-    #
-    # test_loader = torch.utils.data.DataLoader(
-    #     test_dataset, batch_size = batch_size,collate_fn = collate_fn,
-    #     num_workers = n_workers, sampler = test_sampler, drop_last = True)
-    #
+    # main()
+    dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01'
+    train_transform = get_transform('train', resolution=(480,640))
+    test_transform  = get_transform(False, resolution = (480,640))
+
+    train_dataset = CustomSegmentation(root_dir = dataset_path
+                                       , image_set = 'train',
+                                       transforms = train_transform)
+    test_dataset  = CustomSegmentation(root_dir = dataset_path,
+                                       image_set = 'val',
+                                       transforms = test_transform)
+
+    train_sampler = torch.utils.data.RandomSampler(train_dataset)
+    test_sampler = torch.utils.data.SequentialSampler(test_dataset)
+
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset, batch_size = batch_size,num_workers = n_workers,
+        collate_fn = collate_fn, drop_last = True, sampler = train_sampler)
+
+    test_loader = torch.utils.data.DataLoader(
+        test_dataset, batch_size = batch_size,collate_fn = collate_fn,
+        num_workers = n_workers, sampler = test_sampler, drop_last = True)
+    for images, labels in train_loader:
+        break
+
+    for image, label in zip(images, labels):
+        image = image.permute(1,2,0).numpy()
+        label = label.numpy()
+        min_value = image.min()
+        max_value = image.max()
+        new_min = 0
+        new_max = 255
+        image = (image - min_value) * (new_max / (max_value - min_value))
+        image = image.astype(np.uint8)
+        fig, (ax1, ax2) = plt.subplots(1,2)
+        ax1.imshow(image)
+        ax2.imshow(label)
+        plt.show()
     #
     #
     #

@@ -2,7 +2,7 @@ import numpy as np
 from PIL import Image
 import random
 
-
+import os
 from torchvision import transforms as T
 import torchvision.transforms.functional as F
 import random
@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
+import cv2
 
 
 def pad_if_smaller(img, size, fill=0):
@@ -194,3 +195,49 @@ class ColorJitter:
 
 
         return image
+
+
+class BackgroundSubstitution(object):
+    def __init__(self, background_path ):
+        self.rate = 0.5
+        self.background_path = background_path
+        self.background_photos = os.listdir(background_path)
+    def __call__(self, image, target):
+        p = torch.randn(1)
+        if p < self.rate:
+            v = np.random.randint(1, len(self.background_photos) - 2)
+            self.background = Image.open(self.background_path + self.background_photos[v])
+
+            self.background = np.array(self.background.resize(image.size))
+            t = np.asarray(target)
+            b = np.where(t == 1)
+            x, y = b[0], b[1]
+            i = np.asarray(image)
+            self.background[x, y] = i[x,y]
+
+            self.background = Image.fromarray(self.background)
+            return self.background, target
+        else:
+            return image, target
+
+
+if __name__ == '__main__':
+    b = BackgroundSubstitution(background_path=r'C:\Users\Andrii\PycharmProjects\segmentationTraining\background\\')
+    image = cv2.imread(r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01\images\training\22_01_13_16_04_22.jpg')
+    mask = cv2.imread(r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01\annotations\training\22_01_13_16_04_22.png')
+
+    i, m = b(image, mask)
+    import matplotlib.pyplot as plt
+
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
+
+    ax1.imshow(image)
+    ax2.imshow(mask)
+    ax3.imshow(i)
+    ax4.imshow(m)
+    plt.show()
+
+
+
+
+

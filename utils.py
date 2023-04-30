@@ -2,7 +2,7 @@ import transforms as T
 import numpy as np
 import torch
 
-def get_transform(train, resolution):
+def get_transform(train, resolution, background_path):
     transforms = []
 
     # if square resolution, perform some aspect cropping
@@ -24,15 +24,11 @@ def get_transform(train, resolution):
             transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation=0.3, hue=0.4, probability = 0.23))
     else:
 
+        transforms.append(T.BackgroundSubstitution(background_path=background_path))
 
-        rate = 1
-
-        if torch.rand(1)  < rate:
-            min_size = int((0.75 if train else 1.0) * 320)
-        else:
-            min_size = 320
-        transforms.append(T.RandomResize2((resolution), min_size))
+        #transforms.append(T.RandomResize2((resolution), 320))
         if train:
+
             transforms.append(T.RandomHorizontalFlip(0.5))
             transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation = 0.3, hue = 0.4, probability = 0.23))
 

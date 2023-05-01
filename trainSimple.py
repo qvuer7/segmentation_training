@@ -102,7 +102,9 @@ def evaluate(model, criterion, dataloader, device, epoch, save_path, l1, lr):
 
 def CECriterion(inputs, target):
     losses = {}
-    criterion = nn.CrossEntropyLoss(weight = torch.tensor([1.0, 2.0]))
+    w = torch.tensor([1.0, 2.0])
+    w = w.to(device)
+    criterion = nn.CrossEntropyLoss(weight = w)
     for name, x in inputs.items():
         # losses[name] = nn.functional.cross_entropy(x, target)
         losses[name] = criterion(x, target)

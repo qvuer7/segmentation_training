@@ -15,20 +15,24 @@ def get_transform(train, resolution, background_path):
         min_size = int((0.75 if train else 1.0) * base_size)
         max_size = int((1.25 if train else 1.0) * base_size)
 
-        transforms.append(T.RandomResize(min_size, max_size))
+
 
         # during training mode, perform some data randomization
         if train:
+            transforms.append(T.RandomResize(min_size, max_size))
+            transforms.append(T.BackgroundSubstitution(background_path=background_path))
             transforms.append(T.RandomHorizontalFlip(0.5))
             transforms.append(T.RandomCrop(crop_size))
-            transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation=0.3, hue=0.4, probability = 0))
+            transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation=0.3, hue=0.4, probability = 0.23))
+        else:
+            transforms.append(T.RandomResize(min_size, max_size))
     else:
 
 
 
         #transforms.append(T.RandomResize2((resolution), 320))
         if train:
-            transforms.append(T.BackgroundSubstitution(background_path=background_path))
+
             transforms.append(T.RandomHorizontalFlip(0.5))
             transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation = 0.3, hue = 0.4, probability = 0.23))
 

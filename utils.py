@@ -19,8 +19,8 @@ def get_transform(train, resolution, background_path):
 
         # during training mode, perform some data randomization
         if train:
-            transforms.append(T.RandomResize(min_size, max_size))
             transforms.append(T.BackgroundSubstitution(background_path=background_path))
+            transforms.append(T.RandomResize(min_size, max_size))
             transforms.append(T.RandomHorizontalFlip(0.5))
             transforms.append(T.RandomCrop(crop_size))
             transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation=0.3, hue=0.4, probability = 0.23))
@@ -32,7 +32,7 @@ def get_transform(train, resolution, background_path):
 
         #transforms.append(T.RandomResize2((resolution), 320))
         if train:
-
+            transforms.append(T.BackgroundSubstitution(background_path=background_path))
             transforms.append(T.RandomHorizontalFlip(0.5))
             transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation = 0.3, hue = 0.4, probability = 0.23))
 

@@ -276,6 +276,8 @@ def main():
                     print(f'TR : {tr_loss}  |  VAL : {tl}')
                     print(f'D  : {dl}  |  IOU : {io}')
 
+                    if epoch == 1:
+                        vizualize(train_loader, model, epoch, save_path=image_save_path)
                     if  max_val_loss < io:
                         try:
                             os.remove(model_best_path)

@@ -177,7 +177,12 @@ def BCECriterion(out, targets):
 
 
 def main():
-
+    try:
+        os.mkdir(image_save_path)
+        os.mkdir(model_save_path)
+        print('dirs created')
+    except Exception as e:
+        print(e)
     # if loss_type == 'BCE':
     #     criterion = BCECriterion
     # else:

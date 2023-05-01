@@ -19,12 +19,12 @@ warnings.filterwarnings("ignore")
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 learning_rates = [0.005]
 n_classes = 2
-n_epochs = 35
+n_epochs = 45
 batch_size = 6
 
 momentum = 0.9
 weight_decay = 0.01
-L1_lambdas = [0.01]
+L1_lambdas = [0.015]
 n_workers = 2
 image_save_path = '/content/images'
 model_save_path = '/content/checkpoints/'
@@ -36,7 +36,7 @@ background_path = '/content/drive/MyDrive/background/'
 # background_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\background\\'
 writer = SummaryWriter()
 w = torch.tensor([0.5, 4.0])
-ws = [[1.0, 3.0] , [1.0,4.0], [1.0,5.0]]
+ws = [[1.0, 4.5]]
 loss_type = 'CE'
 
 
@@ -82,6 +82,7 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
 
         loss = criterion(out, target, we = wghts)
         loss += total_l1_loss
+        loss = loss +  (1 - iou(out['out'], target))*50
         loss.requires_grad_(True)
         tl+=loss.item()
 

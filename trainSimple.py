@@ -259,6 +259,7 @@ def main():
 
 
                     print(f'TR : {tr_loss}  |  VAL : {tl}')
+                    print(f'D  : {dl}  |  IOU : {io}')
 
                     if  max_val_loss > tl:
                         try:
@@ -270,7 +271,7 @@ def main():
                         except Exception as e:
                             print(e)
 
-                        vizualize(dataloader = test_loader, model = model, epoch = epoch, save_path=image_save_path)
+                        vizualize(dataloader = test_loader, model = model, epoch = epoch, save_path=image_save_path + f'/model_B({w[0]})_A({w[1]})')
                         max_val_loss = tl
                         torch.save({'model': model.state_dict(),
                                     'num_classes': n_classes,

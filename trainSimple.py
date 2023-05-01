@@ -41,7 +41,7 @@ loss_type = 'CE'
 
 
 def vizualize(dataloader, model,  epoch, save_path):
-    for c, (image, target) in tqdm(enumerate(dataloader)):
+    for c, (image, target) in enumerate(dataloader):
         if c%6 == 0:
             image, target = image.to(device), target.to(device)
             with torch.no_grad():
@@ -69,7 +69,7 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
     model.train()
     tl = 0
     print('TRAINING')
-    for c, (image, target) in tqdm(enumerate(dataloader)):
+    for c, (image, target) in enumerate(dataloader):
 
 
         image, target = image.to(device), target.to(device)
@@ -260,7 +260,7 @@ def main():
                 print(f'w : {w}')
 
                 for epoch in range(1,n_epochs+1):
-
+                    print(f' EPOCH: {epoch}')
                     tr_loss = train_one_epoch(model = model, optimizer = optimizer,
                                               dataloader = train_loader, criterion=criterion,
                                               device = device, params = params_to_optimize, L1_lambda = L1_lambda, wghts=torch.tensor(w))

@@ -36,7 +36,7 @@ background_path = '/content/drive/MyDrive/background/'
 # background_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\background\\'
 writer = SummaryWriter()
 w = torch.tensor([0.5, 4.0])
-ws = [[0.75, 4],[1, 3] , [1,4], [1,5]]
+ws = [[1.0, 3.0] , [1.0,4.0], [1.0,5.0]]
 loss_type = 'CE'
 
 

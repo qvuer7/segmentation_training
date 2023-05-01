@@ -199,7 +199,7 @@ class ColorJitter:
 
 class BackgroundSubstitution(object):
     def __init__(self, background_path ):
-        self.rate = 0.9
+        self.rate = 0.98
         self.background_path = background_path
         self.background_photos = os.listdir(background_path)
     def __call__(self, image, target):

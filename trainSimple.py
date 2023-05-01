@@ -236,7 +236,7 @@ def main():
     # model = model.to(device)
     tr_loss = 0
 
-    max_val_loss = torch.inf
+    max_val_loss = -torch.inf
     for L1_lambda in L1_lambdas:
         for lr in learning_rates:
             for w in ws:

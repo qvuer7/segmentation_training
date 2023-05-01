@@ -17,7 +17,7 @@ import torch.nn.functional as F
 warnings.filterwarnings("ignore")
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-learning_rates = [0.01]
+learning_rates = [0.05]
 n_classes = 2
 n_epochs = 45
 batch_size = 6
@@ -81,8 +81,8 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
         total_l1_loss = total_l1_loss * L1_lambda
 
         loss = criterion(out, target, we = wghts)
-        loss += total_l1_loss
-        loss = loss +  (1 - iou(out['out'], target))*50
+        #loss += total_l1_loss
+        loss = loss +  (1 - iou(out['out'], target))*200
         loss.requires_grad_(True)
         tl+=loss.item()
 

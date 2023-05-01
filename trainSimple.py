@@ -74,7 +74,7 @@ def evaluate(model, criterion, dataloader, device, epoch, save_path, l1, lr):
             loss = criterion(out, target)
             tl+= loss.item()
             #if  (epoch % 5 == 0)  and (c % 6 == 0 ):
-            if (epoch % 5 == 0) and (c % 9 == 0):
+            if (epoch % 5 == 0) and (c % 4 == 0):
                 image = image.squeeze().cpu()
                 out = out['out'].squeeze().cpu()
                 i = image[0].permute(1,2,0).numpy()
@@ -102,7 +102,7 @@ def evaluate(model, criterion, dataloader, device, epoch, save_path, l1, lr):
 
 def CECriterion(inputs, target):
     losses = {}
-    w = torch.tensor([1.0, 2.0])
+    w = torch.tensor([0.5, 4.0])
     w = w.to(device)
     criterion = nn.CrossEntropyLoss(weight = w)
     for name, x in inputs.items():

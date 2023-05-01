@@ -282,7 +282,7 @@ def main():
                         except Exception as e:
                             pass
                         try:
-                            os.mkdir(image_save_path + f'/model_B({w[0]})_A({w[1]})_l{round(max_val_loss,4)}')
+                            os.mkdir(image_save_path + f'/model_B({w[0]})_A({w[1]})_l{round(io,4)}')
                         except Exception as e:
                             print(e)
 
@@ -293,7 +293,7 @@ def main():
                                     'resolution' : (480, 640),
                                     'arch': 'fcn_resnet50'}, f'{model_save_path}/model_B({w[0]})_A({w[1]})_loss{round(io,4)}.pth',
                                    )
-                        model_best_path = f'{model_save_path}/model_B({w[0]})_A({w[1]})_loss{round(max_val_loss,4)}.pth'
+                        model_best_path = f'{model_save_path}/model_B({w[0]})_A({w[1]})_loss{round(io,4)}.pth'
 
 if __name__ == '__main__':
     main()

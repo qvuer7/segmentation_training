@@ -105,7 +105,7 @@ def CECriterion(inputs, target):
     criterion = nn.CrossEntropyLoss(weight = torch.tensor([1.0, 2.0]))
     for name, x in inputs.items():
         # losses[name] = nn.functional.cross_entropy(x, target)
-        losses[name] = criterion(inputs, target)
+        losses[name] = criterion(x, target)
 
 
     if len(losses) == 1:

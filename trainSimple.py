@@ -42,27 +42,28 @@ loss_type = 'CE'
 
 def vizualize(dataloader, model,  epoch, save_path):
     for c, (image, target) in tqdm(enumerate(dataloader)):
-        image, target = image.to(device), target.to(device)
-        with torch.no_grad():
-            out = model(out)
-        image = image.squeeze().cpu()
+        if c%6 == 0:
+            image, target = image.to(device), target.to(device)
+            with torch.no_grad():
+                out = model(image)
+            image = image.squeeze().cpu()
 
-        out = out['out'].squeeze().cpu()
-        i = image[0].permute(1, 2, 0).numpy()
-        m = out[0].argmax(dim=0).numpy()
+            out = out['out'].squeeze().cpu()
+            i = image[0].permute(1, 2, 0).numpy()
+            m = out[0].argmax(dim=0).numpy()
 
-        min_value = i.min()
-        max_value = i.max()
-        new_min = 0
-        new_max = 255
-        i = (i - min_value) * (new_max / (max_value - min_value))
-        i = i.astype(np.uint8)
+            min_value = i.min()
+            max_value = i.max()
+            new_min = 0
+            new_max = 255
+            i = (i - min_value) * (new_max / (max_value - min_value))
+            i = i.astype(np.uint8)
 
-        fig, (ax1, ax2) = plt.subplots(1, 2)
-        ax1.imshow(i)
-        ax2.imshow(m)
-        plt.savefig(f'{save_path}/{epoch}_{c}.jpg')
-        print('IMAGE SAVED')
+            fig, (ax1, ax2) = plt.subplots(1, 2)
+            ax1.imshow(i)
+            ax2.imshow(m)
+            plt.savefig(f'{save_path}/{epoch}_{c}.jpg')
+            print('IMAGE SAVED')
 
 def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_lambda, wghts):
     model.train()
@@ -280,11 +281,11 @@ def main():
                         except Exception as e:
                             pass
                         try:
-                            os.mkdir(image_save_path + f'/model_B({w[0]})_A({w[1]})')
+                            os.mkdir(image_save_path + f'/model_B({w[0]})_A({w[1]})_l{round(max_val_loss,4)}')
                         except Exception as e:
                             print(e)
 
-                        vizualize(dataloader = test_loader, model = model, epoch = epoch, save_path=image_save_path + f'/model_B({w[0]})_A({w[1]})')
+                        vizualize(dataloader = test_loader, model = model, epoch = epoch, save_path=image_save_path + f'/model_B({w[0]})_A({w[1]})_l{round(max_val_loss,4)}')
                         max_val_loss = tl
                         torch.save({'model': model.state_dict(),
                                     'num_classes': n_classes,

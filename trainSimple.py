@@ -89,19 +89,40 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
 
     return tl/c
 
-def evaluate(model, criterion, dataloader, device, epoch, save_path, l1, lr):
+
+
+def dice_coefficient(prediction, target):
+    smooth = 1e-5  # Small constant to avoid division by zero
+    intersection = torch.sum(prediction * target)
+    union = torch.sum(prediction) + torch.sum(target)
+    dice = (2.0 * intersection + smooth) / (union + smooth)
+    return dice.item()
+
+
+def iou(prediction, target):
+    smooth = 1e-5  # Small constant to avoid division by zero
+    intersection = torch.sum(prediction * target)
+    union = torch.sum(prediction) + torch.sum(target) - intersection
+    iou = (intersection + smooth) / (union + smooth)
+    return iou.item()
+
+def evaluate(model, criterion, dataloader, device, wghts):
     model.eval()
     print('EVALUATING')
     tl = 0
-    saved = 0
+    io = 0
+    dl = 0
     with torch.no_grad():
         for c, (image, target) in tqdm(enumerate(dataloader)):
             image, target = image.to(device), target.to(device)
             out = model(image)
-            loss = criterion(out, target)
+            io += iou(out['out'], target)
+            dl += dice_coefficient(out['out'], target)
+            loss = criterion(out, target, we = wghts)
             tl+= loss.item()
 
-    return tl/c
+
+    return tl/c, io/c, dl/c
 
 
 
@@ -228,11 +249,14 @@ def main():
                     tr_loss = train_one_epoch(model = model, optimizer = optimizer,
                                               dataloader = train_loader, criterion=criterion,
                                               device = device, params = params_to_optimize, L1_lambda = L1_lambda, wghts=torch.tensor(w))
-                    tl = evaluate(model = model, dataloader = test_loader, criterion=criterion,
-                                  device = device, epoch = epoch, save_path = image_save_path, lr = lr, l1 = L1_lambda)
+                    tl, io, dl = evaluate(model = model, dataloader = test_loader, criterion=criterion,
+                                  device = device, wghts=torch.tensor(w) )
 
                     writer.add_scalar(f"Loss/train_B({w[0]})_A({w[1]})", tr_loss, epoch)
-                    writer.add_scalar(f"Loss/val__B({w[0]})_A({w[1]})", tl, epoch)
+                    writer.add_scalar(f"Loss/val_B({w[0]})_A({w[1]})", tl, epoch)
+                    writer.add_scalar(f"Loss/IOU({w[0]})_A({w[1]})", io, epoch)
+                    writer.add_scalar(f"Loss/DICE({w[0]})_A({w[1]})", dl, epoch)
+
 
                     print(f'TR : {tr_loss}  |  VAL : {tl}')
 
@@ -281,54 +305,62 @@ if __name__ == '__main__':
     #     num_workers = n_workers, sampler = test_sampler, drop_last = True)
     # for images, labels in test_loader:
     #     break
-
-    # for image, label in zip(images, labels):
-    #     image = image.permute(1,2,0).numpy()
-    #     label = label.numpy()
-    #     min_value = image.min()
-    #     max_value = image.max()
-    #     new_min = 0
-    #     new_max = 255
-    #     image = (image - min_value) * (new_max / (max_value - min_value))
-    #     image = image.astype(np.uint8)
-    #     fig, (ax1, ax2) = plt.subplots(1,2)
-    #     ax1.imshow(image)
-    #     ax2.imshow(label)
-    #     plt.show()
-
-
-
-
+    #
+    #
+    # # for image, label in zip(images, labels):
+    # #     image = image.permute(1,2,0).numpy()
+    # #     label = label.numpy()
+    # #     min_value = image.min()
+    # #     max_value = image.max()
+    # #     new_min = 0
+    # #     new_max = 255
+    # #     image = (image - min_value) * (new_max / (max_value - min_value))
+    # #     image = image.astype(np.uint8)
+    # #     fig, (ax1, ax2) = plt.subplots(1,2)
+    # #     ax1.imshow(image)
+    # #     ax2.imshow(label)
+    # #     plt.show()
+    #
+    #
+    #
+    #
     # weights = torchvision.models.ResNet50_Weights
     # model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes, weights_backbone=weights)
+    #
+    #
     # checkpoint = torch.load(r'C:\Users\Andrii\PycharmProjects\segmentationTraining\models\resnet50_weights\model_lr0.005_24_l10.2_loss0.0248.pth', map_location = device)
     #
     # model.load_state_dict(checkpoint['model'])
     # with torch.no_grad():
     #     out = model(images)
-    # n = 1
-    # out = out['out'][n]
-    # label = labels[n].detach().numpy()
     #
-    # out_mask = out.argmax(dim = 0).numpy()
-    # print(np.unique(out_mask))
-    # ori = get_image(images[n])
-    # fig, (ax1, ax2, ax3) = plt.subplots(1,3)
-    # ax1.imshow(ori)
-    # ax2.imshow(label)
-    # ax3.imshow(out_mask)
-    # plt.show()
-    # for image, label in zip(images, labels):
-    #     image = image.permute(1,2,0).numpy()
-    #     label = label.numpy()
-    #     min_value = image.min()
-    #     max_value = image.max()
-    #     new_min = 0
-    #     new_max = 255
-    #     image = (image - min_value) * (new_max / (max_value - min_value))
-    #     image = image.astype(np.uint8)
-    #     fig, (ax1, ax2) = plt.subplots(1,2)
-    #     ax1.imshow(image)
-    #     ax2.imshow(label)
-    #     plt.show()
-
+    # dc = dice_coefficient(out['out'], labels)
+    # i  = iou(out['out'], labels)
+    # print(dc)
+    # print(i)
+    # # n = 1
+    # # out = out['out'][n]
+    # # label = labels[n].detach().numpy()
+    # #
+    # # out_mask = out.argmax(dim = 0).numpy()
+    # # print(np.unique(out_mask))
+    # # ori = get_image(images[n])
+    # # fig, (ax1, ax2, ax3) = plt.subplots(1,3)
+    # # ax1.imshow(ori)
+    # # ax2.imshow(label)
+    # # ax3.imshow(out_mask)
+    # # plt.show()
+    # # for image, label in zip(images, labels):
+    # #     image = image.permute(1,2,0).numpy()
+    # #     label = label.numpy()
+    # #     min_value = image.min()
+    # #     max_value = image.max()
+    # #     new_min = 0
+    # #     new_max = 255
+    # #     image = (image - min_value) * (new_max / (max_value - min_value))
+    # #     image = image.astype(np.uint8)
+    # #     fig, (ax1, ax2) = plt.subplots(1,2)
+    # #     ax1.imshow(image)
+    # #     ax2.imshow(label)
+    # #     plt.show()
+    #

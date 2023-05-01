@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore")
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 learning_rates = [0.005]
 n_classes = 2
-n_epochs = 51
+n_epochs = 35
 batch_size = 6
 
 momentum = 0.9

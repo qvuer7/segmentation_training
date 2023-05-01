@@ -276,7 +276,7 @@ def main():
                     print(f'TR : {tr_loss}  |  VAL : {tl}')
                     print(f'D  : {dl}  |  IOU : {io}')
 
-                    if  max_val_loss > io:
+                    if  max_val_loss < io:
                         try:
                             os.remove(model_best_path)
                         except Exception as e:
@@ -287,7 +287,7 @@ def main():
                             print(e)
 
                         vizualize(dataloader = test_loader, model = model, epoch = epoch, save_path=image_save_path + f'/model_B({w[0]})_A({w[1]})_l{round(io,4)}')
-                        max_val_loss = tl
+                        max_val_loss = io
                         torch.save({'model': model.state_dict(),
                                     'num_classes': n_classes,
                                     'resolution' : (480, 640),

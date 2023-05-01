@@ -36,7 +36,7 @@ background_path = '/content/drive/MyDrive/background/'
 # background_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\background\\'
 writer = SummaryWriter()
 w = torch.tensor([0.5, 4.0])
-ws = [[0.75, 3], [0.75, 4],[1, 3] , [1,4], [1,5]]
+ws = [[0.75, 4],[1, 3] , [1,4], [1,5]]
 loss_type = 'CE'
 
 
@@ -138,8 +138,8 @@ def evaluate(model, criterion, dataloader, device, wghts):
 def CECriterion(inputs, target, we):
     losses = {}
 
-    w = we.to(device)
-    criterion = nn.CrossEntropyLoss(weight = w)
+    weight = we.to(device)
+    criterion = nn.CrossEntropyLoss(weight = weight)
     for name, x in inputs.items():
         # losses[name] = nn.functional.cross_entropy(x, target)
         losses[name] = criterion(x, target)
@@ -257,6 +257,7 @@ def main():
                     params_to_optimize,
                     lr=lr, momentum=momentum, weight_decay=weight_decay)
                 print(f'L1: {L1_lambda} | LR: {lr} | best val: {max_val_loss}')
+                print(f'w : {w}')
 
                 for epoch in range(1,n_epochs+1):
 
@@ -275,7 +276,7 @@ def main():
                     print(f'TR : {tr_loss}  |  VAL : {tl}')
                     print(f'D  : {dl}  |  IOU : {io}')
 
-                    if  max_val_loss > tl:
+                    if  max_val_loss > io:
                         try:
                             os.remove(model_best_path)
                         except Exception as e:
@@ -285,12 +286,12 @@ def main():
                         except Exception as e:
                             print(e)
 
-                        vizualize(dataloader = test_loader, model = model, epoch = epoch, save_path=image_save_path + f'/model_B({w[0]})_A({w[1]})_l{round(max_val_loss,4)}')
+                        vizualize(dataloader = test_loader, model = model, epoch = epoch, save_path=image_save_path + f'/model_B({w[0]})_A({w[1]})_l{round(io,4)}')
                         max_val_loss = tl
                         torch.save({'model': model.state_dict(),
                                     'num_classes': n_classes,
                                     'resolution' : (480, 640),
-                                    'arch': 'fcn_resnet50'}, f'{model_save_path}/model_B({w[0]})_A({w[1]})_loss{round(max_val_loss,4)}.pth',
+                                    'arch': 'fcn_resnet50'}, f'{model_save_path}/model_B({w[0]})_A({w[1]})_loss{round(io,4)}.pth',
                                    )
                         model_best_path = f'{model_save_path}/model_B({w[0]})_A({w[1]})_loss{round(max_val_loss,4)}.pth'
 

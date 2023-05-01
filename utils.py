@@ -89,3 +89,14 @@ def get_transform_train():
         tr.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     return transform
+
+
+def get_image(image_tensor):
+    predicted_mask = image_tensor.detach().permute(1, 2, 0).numpy()
+    min_value = predicted_mask.min()
+    max_value = predicted_mask.max()
+    new_min = 0
+    new_max = 255
+    predicted_mask = (predicted_mask - min_value) * (new_max / (max_value - min_value))
+    predicted_mask = predicted_mask.astype(np.uint8)
+    return predicted_mask

@@ -12,6 +12,7 @@ from torch.utils.tensorboard import SummaryWriter
 from utils import get_transform_train
 import warnings
 import os
+import torch.nn.functional as F
 
 warnings.filterwarnings("ignore")
 
@@ -93,17 +94,24 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
 
 def dice_coefficient(prediction, target):
     smooth = 1e-5  # Small constant to avoid division by zero
-    intersection = torch.sum(prediction * target)
-    union = torch.sum(prediction) + torch.sum(target)
-    dice = (2.0 * intersection + smooth) / (union + smooth)
+    threshold = 0.5  # Threshold for converting network output to binary mask
+    with torch.no_grad():
+        predicted_class = torch.argmax(prediction, dim=1)  # Get the predicted class index
+        prediction_binary = (predicted_class == 1).float()
+        intersection = torch.sum(prediction_binary * target)
+        union = torch.sum(prediction_binary) + torch.sum(target)
+        dice = (2.0 * intersection + smooth) / (union + smooth)
     return dice.item()
-
 
 def iou(prediction, target):
     smooth = 1e-5  # Small constant to avoid division by zero
-    intersection = torch.sum(prediction * target)
-    union = torch.sum(prediction) + torch.sum(target) - intersection
-    iou = (intersection + smooth) / (union + smooth)
+    threshold = 0.5  # Threshold for converting network output to binary mask
+    with torch.no_grad():
+        predicted_class = torch.argmax(prediction, dim=1)  # Get the predicted class index
+        prediction_binary = (predicted_class == 1).float()
+        intersection = torch.sum(prediction_binary * target)
+        union = torch.sum(prediction_binary) + torch.sum(target) - intersection
+        iou = (intersection + smooth) / (union + smooth)
     return iou.item()
 
 def evaluate(model, criterion, dataloader, device, wghts):
@@ -302,26 +310,10 @@ if __name__ == '__main__':
     #     collate_fn = collate_fn, drop_last = True, sampler = train_sampler)
     #
     # test_loader = torch.utils.data.DataLoader(
-    #     test_dataset, batch_size = 2,collate_fn = collate_fn,
+    #     test_dataset, batch_size = 6,collate_fn = collate_fn,
     #     num_workers = n_workers, sampler = test_sampler, drop_last = True)
-    # for images, labels in test_loader:
+    # for c, (images, labels) in enumerate(test_loader):
     #     break
-    #
-    #
-    # # for image, label in zip(images, labels):
-    # #     image = image.permute(1,2,0).numpy()
-    # #     label = label.numpy()
-    # #     min_value = image.min()
-    # #     max_value = image.max()
-    # #     new_min = 0
-    # #     new_max = 255
-    # #     image = (image - min_value) * (new_max / (max_value - min_value))
-    # #     image = image.astype(np.uint8)
-    # #     fig, (ax1, ax2) = plt.subplots(1,2)
-    # #     ax1.imshow(image)
-    # #     ax2.imshow(label)
-    # #     plt.show()
-    #
     #
     #
     #
@@ -332,6 +324,7 @@ if __name__ == '__main__':
     # checkpoint = torch.load(r'C:\Users\Andrii\PycharmProjects\segmentationTraining\models\resnet50_weights\model_lr0.005_24_l10.2_loss0.0248.pth', map_location = device)
     #
     # model.load_state_dict(checkpoint['model'])
+    # model.eval()
     # with torch.no_grad():
     #     out = model(images)
     #

@@ -178,7 +178,7 @@ class ColorJitter:
         image = image.convert("HSV")
         h, s, v = image.split()
         l = np.asarray(label)
-        spear_coords = np.where(l == 255)
+        spear_coords = np.where(l == 1)
 
 
 
@@ -204,7 +204,6 @@ class BackgroundSubstitution(object):
         self.background_photos = os.listdir(background_path)
     def __call__(self, image, target):
         p = torch.rand(1)
-        print(p)
         if p < self.rate:
             v = np.random.randint(1, len(self.background_photos) - 2)
             self.background = Image.open(self.background_path + self.background_photos[v])

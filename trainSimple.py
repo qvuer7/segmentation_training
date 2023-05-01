@@ -101,8 +101,9 @@ def evaluate(model, criterion, dataloader, device, epoch, save_path, l1, lr):
 
 def CECriterion(inputs, target):
     losses = {}
+
     for name, x in inputs.items():
-        losses[name] = nn.functional.cross_entropy(x, target)
+        losses[name] = nn.functional.cross_entropy(x, target, ignore_index = 0)
 
 
     if len(losses) == 1:
@@ -195,8 +196,7 @@ def main():
     for L1_lambda in L1_lambdas:
         for lr in learning_rates:
             weights = torchvision.models.ResNet50_Weights
-            model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes,
-                                                                             weights_backbone=weights)
+            model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes,weights_backbone=weights)
             # model = fcn_resnet34(pretrained=False, progress=True, num_classes=2, aux_loss=False)
             params_to_optimize = [{'params': []}]
 
@@ -256,7 +256,7 @@ if __name__ == '__main__':
     # test_sampler = torch.utils.data.SequentialSampler(test_dataset)
     #
     # train_loader = torch.utils.data.DataLoader(
-    #     train_dataset, batch_size = 40,num_workers = n_workers,
+    #     train_dataset, batch_size = 2,num_workers = n_workers,
     #     collate_fn = collate_fn, drop_last = True, sampler = train_sampler)
     #
     # test_loader = torch.utils.data.DataLoader(
@@ -265,26 +265,35 @@ if __name__ == '__main__':
     # for images, labels in train_loader:
     #     break
     #
-    # for image, label in zip(images, labels):
-    #     image = image.permute(1,2,0).numpy()
-    #     label = label.numpy()
-    #     min_value = image.min()
-    #     max_value = image.max()
-    #     new_min = 0
-    #     new_max = 255
-    #     image = (image - min_value) * (new_max / (max_value - min_value))
-    #     image = image.astype(np.uint8)
-    #     fig, (ax1, ax2) = plt.subplots(1,2)
-    #     ax1.imshow(image)
-    #     ax2.imshow(label)
-    #     plt.show()
+    # # for image, label in zip(images, labels):
+    # #     image = image.permute(1,2,0).numpy()
+    # #     label = label.numpy()
+    # #     min_value = image.min()
+    # #     max_value = image.max()
+    # #     new_min = 0
+    # #     new_max = 255
+    # #     image = (image - min_value) * (new_max / (max_value - min_value))
+    # #     image = image.astype(np.uint8)
+    # #     fig, (ax1, ax2) = plt.subplots(1,2)
+    # #     ax1.imshow(image)
+    # #     ax2.imshow(label)
+    # #     plt.show()
     #
-
-
-
+    #
+    #
+    #
     # weights = torchvision.models.ResNet50_Weights
     # model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes, weights_backbone=weights)
-    #
+    # out = model(images)
+    # out = out['out']
+    # o = out.detach().numpy()
+    # print(np.unique(o))
+    # criterion = nn.CrossEntropyLoss()
+    # criterion2 = nn.CrossEntropyLoss(ignore_index = 0)
+    # loss = criterion(out, labels)
+    # loss2 = criterion2(out, labels)
+    # print(loss)
+    # print(loss2)
     # a =  evaluate(model = model, criterion= BCECriterion, dataloader= test_loader, device = torch.device('cpu'),
     #               epoch = 1, save_path=image_save_path, lr = 12,l1 =2 )
     #

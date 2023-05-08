@@ -20,7 +20,7 @@ param_grid = {
     'weight_decay': [0.01],
     'L1_lambda': [0.001],
     'n_epochs': [50],
-    'loss_weights': [[1.0,1.5], [1.0, 2.0]]
+    'loss_weights': [[1.0,5.0], [1.0, 4.0]]
 }
 # min_image_sizes = [300]
 # batch_sizes = [8]

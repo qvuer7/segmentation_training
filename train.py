@@ -4,8 +4,9 @@ from dataset import get_loaders
 from trainvalutils import train_one_epoch, evaluate
 from criterions import *
 
+
 from torch.utils.tensorboard import SummaryWriter
-from sklearn.model_selection import GridSearchCV
+from tqdm import tqdm
 import itertools
 import torch
 import warnings
@@ -14,13 +15,13 @@ import os
 
 param_grid = {
     'min_image_size': [300],
-    'batch_size': [8,16],
+    'batch_size': [8],
     'lr': [0.005],
     'momentum': [0.9],
     'weight_decay': [0.01],
     'L1_lambda': [0.01],
     'n_epochs': [50],
-    'loss_weights': [[1.0, 3.0] , [1.0,4.0], [1.0,5.0]]
+    'loss_weights': [[1.0, 3.0] , [1.0,3.5], [1.0,4.5]]
 }
 # min_image_sizes = [300]
 # batch_sizes = [8]
@@ -39,14 +40,13 @@ n_workers = 2 if torch.cuda.is_available() else 0
 
 
 if torch.cuda.is_available():
-    image_save_path = '/content/images'
-    model_save_path = '/content/checkpoints/'
     dataset_path = '/content/drive/MyDrive/segmentation_dataset_24_01'
     background_path = '/content/drive/MyDrive/background/'
-    global_logdir_path = '/content/logs'
+    results_path   = '/content/result/'
 else:
     dataset_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01\\'
     background_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\background\\'
+    results_path = r'C:\Users\Andrii\PycharmProjects\segmentationTraining\results\\'
 
 warnings.filterwarnings("ignore")
 
@@ -62,7 +62,7 @@ warnings.filterwarnings("ignore")
 
 def train_segmentor(params):
     min_image_size, batch_size, lr, momentum, weight_decay, L1_lambda, n_epochs, loss_weight = params
-    job_path, checkpoints_path, images_path, log_path = create_training_job_folders(params, save_path = 'results')
+    job_path, checkpoints_path, images_path, log_path = create_training_job_folders(params, save_path = results_path)
     writer = SummaryWriter(log_dir=log_path)
 
 
@@ -85,22 +85,22 @@ def train_segmentor(params):
 
     IOULoss = 0
     best_IOU = -torch.inf
-    for epoch in range(1,n_epochs + 1):
-        # trainCELoss = train_one_epoch(model = model, dataloader=train_loader,L1_lambda=L1_lambda,
-        #                              wghts=torch.tensor(loss_weight), optimizer = optimizer,
-        #                              criterion=criterion, params=params_to_optimize, device = device)
-        #
-        #
-        # testCELoss, IOULoss, DiceLoss = evaluate(model=model, dataloader=test_loader, criterion=criterion,
-        #                                     device=device, wghts=torch.tensor(loss_weight))
+    for epoch in tqdm(range(1,n_epochs + 1)):
+        trainCELoss = train_one_epoch(model = model, dataloader=train_loader,L1_lambda=L1_lambda,
+                                     wghts=torch.tensor(loss_weight), optimizer = optimizer,
+                                     criterion=criterion, params=params_to_optimize, device = device)
 
-        # writer.add_scalar(f"Loss/train", trainCELoss, epoch)
-        # writer.add_scalar(f"Loss/val", testCELoss, epoch)
-        # writer.add_scalar(f"Loss/IOU", IOULoss, epoch)
-        # writer.add_scalar(f"Loss/DICE", DiceLoss, epoch)
-        #
-        # print(f'TR : {trainCELoss}  |  VAL : {testCELoss}')
-        # print(f'D  : {DiceLoss}  |  IOU : {IOULoss}')
+
+        testCELoss, IOULoss, DiceLoss = evaluate(model=model, dataloader=test_loader, criterion=criterion,
+                                            device=device, wghts=torch.tensor(loss_weight))
+
+        writer.add_scalar(f"Loss/train", trainCELoss, epoch)
+        writer.add_scalar(f"Loss/val", testCELoss, epoch)
+        writer.add_scalar(f"Loss/IOU", IOULoss, epoch)
+        writer.add_scalar(f"Loss/DICE", DiceLoss, epoch)
+
+        print(f'TR : {trainCELoss}  |  VAL : {testCELoss}')
+        print(f'D  : {DiceLoss}  |  IOU : {IOULoss}')
 
         IOULoss+=20
         if epoch == 1:

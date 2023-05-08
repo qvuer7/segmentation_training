@@ -40,7 +40,7 @@ def evaluate(model, criterion, dataloader, device, wghts):
             out = model(image)
             io += iou(out['out'], target)
             dl += dice_coefficient(out['out'], target)
-            loss = criterion(out, target, we = wghts)
+            loss = criterion(out, target, we = wghts, device = device)
             tl+= loss.item()
 
 

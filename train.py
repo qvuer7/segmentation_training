@@ -24,6 +24,7 @@ param_grid = {
     'io_coffs': [2.0],
     'dice_coffs': [2.0]
 }
+m = 'resnet34'
 # min_image_sizes = [300]
 # batch_sizes = [8]
 # learning_rates = [0.005]
@@ -75,7 +76,7 @@ def train_segmentor(params):
     test_loader, train_loader = get_loaders(dataset_path=dataset_path, train_transform=train_transform, test_transform=test_transform,
                                             n_workers=n_workers, batch_size=batch_size)
 
-    model, params_to_optimize = get_model(model_name = 'resnet50', n_classes=2)
+    model, params_to_optimize = get_model(model_name = m, n_classes=2)
     model = model.to(device)
     optimizer = torch.optim.SGD(
         params_to_optimize,
@@ -115,7 +116,7 @@ def train_segmentor(params):
                 pass
 
             save_model(n_classes=n_classes, resolution = image_resolution, model = model,
-                       IOULoss= IOULoss, checkpoint_paths= checkpoints_path )
+                       IOULoss= IOULoss, checkpoint_paths= checkpoints_path, name = m )
 
 
             vizualize(test_loader, model, epoch, save_path=images_path, device=device, every_n=5)
@@ -131,6 +132,12 @@ if __name__ == '__main__':
 
     for params in param_combinations:
         train_segmentor(params = params)
+
+    #
+    # model, parametrs = get_model(m, n_classes = 2)
+    # print(model)
+    # save_model(n_classes = 2, model = model, name = m, resolution = (640, 480), IOULoss=12,
+    #            checkpoint_paths=r'C:\Users\Andrii\PycharmProjects\segmentationTraining\runs\\')
     #     break
     #
     # min_image_size, batch_size, lr, momentum, weight_decay, L1_lambda, n_epochs, loss_weight = params

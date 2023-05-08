@@ -123,7 +123,7 @@ def get_model(model_name = 'resnet50', n_classes = 2):
         model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes,
                                                                          weights_backbone=weights)
     elif model_name == 'resnet34':
-        model = fcn_resnet34(pretrained=True, progress=True, num_classes=2, aux_loss=False)
+        model = fcn_resnet34(pretrained=False, progress=True, num_classes=2, aux_loss=False)
 
     else :
         weights = torchvision.models.segmentation.DeepLabV3_ResNet50_Weights
@@ -140,12 +140,16 @@ def get_model(model_name = 'resnet50', n_classes = 2):
 
     return model, params_to_optimize
 
-def save_model(n_classes, checkpoint_paths, model, IOULoss, resolution):
+def save_model(n_classes, checkpoint_paths, model, IOULoss, resolution, name):
+    if name == 'resnet50':
+        arch = 'fcn_resnet50'
+    elif name == 'resnet34':
+        arch = 'fcn_resnet34'
     path = os.path.join(checkpoint_paths, f'model_{IOULoss}.pth')
     torch.save({'model': model.state_dict(),
                 'num_classes': n_classes,
                 'resolution': resolution,
-                'arch': 'fcn_resnet50'}, path,
+                'arch': arch}, path,
                )
     print(f'model saved: {path}')
 

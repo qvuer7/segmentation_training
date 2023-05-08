@@ -10,7 +10,7 @@ import numpy as np
 import torch
 import torchvision.transforms as transforms
 from PIL import Image
-import cv2
+import torchvision
 
 
 def pad_if_smaller(img, size, fill=0):
@@ -221,12 +221,90 @@ class BackgroundSubstitution(object):
             return image, target
 
 
+
+class RandomRotation(object):
+    def __init__(self, min_angle = 5, max_angle = 55, rotation_probability = 0.35, expansion_probability = 0.5):
+        self.min_angle = min_angle
+        self.max_angle = max_angle
+        self.rotation_probability = rotation_probability
+        self.expansion_probability = expansion_probability
+
+    def __call__(self, image, target):
+        if torch.rand(1) < self.rotation_probability:
+            angle = int(torch.randint(self.min_angle, self.max_angle, (1,)))
+            if torch.rand(1) < self.expansion_probability:
+                image = image.rotate(angle, expand = False)
+                target = target.rotate(angle, expand = False)
+            else:
+                image = image.rotate(angle, expand = False)
+                target = target.rotate(angle, expand = False)
+        return image, target
+
+
+
+
+import torchgeometry as tgm
+
+
+class RandomAffine(object):
+    def __init__(self, degrees = 25.0, probability = 0.9, translate=None, scale=None, shear=None):
+        self.probability = probability
+        self.angle = degrees
+        self.translation = [-8, 8]
+        self.shear = [-8,8]
+        self.scale = [0.9, 1.1]
+    def __call__(self, image, mask):
+        if torch.rand(1) < self.probability:
+            angle = float(torch.rand(1) * self.angle)
+            translation = [float(torch.rand(1) * self.translation[0] + self.translation[1]),
+                           float(torch.rand(1) * self.translation[0] + self.translation[1])]
+            shear = [float(torch.rand(1) * self.shear[0] + self.shear[1]),
+                     float(torch.rand(1) * self.shear[0] + self.shear[1])]
+            scale = float(torch.rand(1) * self.scale[0] + self.scale[1])
+            im = transforms.ToTensor()(image)
+            ma = transforms.ToTensor()(mask)
+
+            both_images = torch.cat((im, ma), 0)
+
+            # Apply the transformations to both images simultaneously:
+
+            transformed_images = F.affine(both_images, angle = angle, translate = translation, shear = shear, scale = scale)
+
+
+            image = transformed_images[:3]
+
+            mask = transformed_images[-1]
+            mask = mask.unsqueeze(0)
+
+
+            image = transforms.ToPILImage()(image)
+            mask  = transforms.ToPILImage()(mask)
+
+
+
+
+        return image, mask
+
 if __name__ == '__main__':
     b = BackgroundSubstitution(background_path=r'C:\Users\Andrii\PycharmProjects\segmentationTraining\background\\')
-    image = cv2.imread(r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01\images\training\22_01_13_16_04_22.jpg')
-    mask = cv2.imread(r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01\annotations\training\22_01_13_16_04_22.png')
 
-    i, m = b(image, mask)
+    image = Image.open(r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01\images\training\22_01_13_16_04_22.jpg')
+    mask  = Image.open(r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01\annotations\training\22_01_13_16_04_22.png')
+
+    ra = RandomAffine(degrees=40)
+    i, m = ra(image, mask)
+
+    i, m = np.asarray(i), np.asarray(m)
+    # print(f'Random Affine')
+    # print(i.min(), i.max())
+    # print(m.min(), m.max())
+    # print('BackGround')
+    # i, m = b(image, mask)
+    # i, m = np.asarray(i), np.asarray(m)
+    # print(i.min(), i.max())
+    # print(m.min(), m.max())
+
+
     import matplotlib.pyplot as plt
 
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)

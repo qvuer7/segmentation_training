@@ -5,7 +5,7 @@ import torch
 
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
-
+from utils import collate_fn
 
 class CustomSegmentation(Dataset):
 
@@ -64,3 +64,24 @@ class CustomSegmentation(Dataset):
 
         return image, target
 
+
+def get_loaders(n_workers, batch_size, dataset_path, train_transform, test_transform):
+    train_dataset = CustomSegmentation(root_dir=dataset_path
+                                       , image_set='train',
+                                       transforms=train_transform)
+    test_dataset = CustomSegmentation(root_dir=dataset_path,
+                                      image_set='val',
+                                      transforms=test_transform)
+
+    train_sampler = torch.utils.data.RandomSampler(train_dataset)
+    test_sampler = torch.utils.data.SequentialSampler(test_dataset)
+
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset, batch_size=batch_size, num_workers=n_workers,
+        collate_fn=collate_fn, drop_last=True, sampler=train_sampler)
+
+    test_loader = torch.utils.data.DataLoader(
+        test_dataset, batch_size=batch_size, collate_fn=collate_fn,
+        num_workers=n_workers, sampler=test_sampler, drop_last=True)
+
+    return test_loader, train_loader

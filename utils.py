@@ -119,7 +119,7 @@ def get_image_label(image_tensor, label):
 
 def get_model(model_name = 'resnet50', n_classes = 2):
     if model_name == 'resnet50':
-        weights = torchvision.models.ResNet50_Weights
+        weights = torchvision.models.segmentation.DeepLabV3_ResNet50_Weights.DEFAULT
         model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes,
                                                                          weights_backbone=weights)
     elif model_name == 'resnet34':
@@ -145,6 +145,8 @@ def save_model(n_classes, checkpoint_paths, model, IOULoss, resolution, name):
         arch = 'fcn_resnet50'
     elif name == 'resnet34':
         arch = 'fcn_resnet34'
+    else:
+        arch = 'deeplabv3_resnet50'
     path = os.path.join(checkpoint_paths, f'model_{IOULoss}.pth')
     torch.save({'model': model.state_dict(),
                 'num_classes': n_classes,

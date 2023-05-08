@@ -29,7 +29,7 @@ def CECriterion(inputs, target, we, device):
     losses = {}
 
     weight = we.to(device)
-    criterion = nn.CrossEntropyLoss(weight = weight, ignore_index=0)
+    criterion = nn.CrossEntropyLoss(weight = weight)
     for name, x in inputs.items():
         # losses[name] = nn.functional.cross_entropy(x, target)
         losses[name] = criterion(x, target)

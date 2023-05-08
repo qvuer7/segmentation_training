@@ -105,7 +105,7 @@ def train_segmentor(params):
         print(f'TR : {trainCELoss}  |  VAL : {testCELoss}')
         print(f'D  : {DiceLoss}  |  IOU : {IOULoss}')
 
-        IOULoss+=20
+
         if epoch == 1 or epoch % 15 == 0:
             vizualize(test_loader, model, epoch, save_path = images_path, device = device, every_n = 5)
             vizualize(train_loader, model, epoch, save_path=train_check_images, device = device, every_n = 25)

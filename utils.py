@@ -119,14 +119,14 @@ def get_image_label(image_tensor, label):
 
 def get_model(model_name = 'resnet50', n_classes = 2):
     if model_name == 'resnet50':
-        weights = torchvision.models.segmentation.DeepLabV3_ResNet50_Weights.DEFAULT
+        weights = torchvision.models.ResNet50_Weights
         model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes,
                                                                          weights_backbone=weights)
     elif model_name == 'resnet34':
         model = fcn_resnet34(pretrained=False, progress=True, num_classes=2, aux_loss=False)
 
     else :
-        weights = torchvision.models.segmentation.DeepLabV3_ResNet50_Weights
+        weights =  torchvision.models.segmentation.DeepLabV3_ResNet50_Weights.DEFAULT
         model = torchvision.models.segmentation.__dict__['deeplabv3_resnet50'](num_classes = n_classes,
                                                                     weights = weights)
 

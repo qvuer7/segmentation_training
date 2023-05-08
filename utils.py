@@ -177,9 +177,9 @@ def vizualize(dataloader, model,  epoch, save_path, device, every_n):
 
 
 def create_training_job_folders(params, save_path):
-    min_image_size, batch_size, lr, momentum, weight_decay, L1_lambda, n_epochs, loss_weight = params
+    min_image_size, batch_size, lr, momentum, weight_decay, L1_lambda, n_epochs, loss_weight, io_cof, dice_cof = params
 
-    model_name = f"model_size{min_image_size}_batch{batch_size}_lr{lr}_momentum{momentum}_wd{weight_decay}_L1{L1_lambda}_epochs{n_epochs}_weights{loss_weight}"
+    model_name = f"model_size{min_image_size}_batch{batch_size}_lr{lr}_momentum{momentum}_wd{weight_decay}_L1{L1_lambda}_epochs{n_epochs}_weights{loss_weight}_iou_{io_cof}_dce_{dice_cof"
     job_path = os.path.join(save_path, model_name)
     images_path = os.path.join(job_path, 'images')
     checkpoints_path = os.path.join(job_path, 'checkpoints')

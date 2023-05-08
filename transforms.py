@@ -195,7 +195,7 @@ class ColorJitter:
 
 class BackgroundSubstitution(object):
     def __init__(self, background_path ):
-        self.rate = 0.98
+        self.rate = 1
         self.background_path = background_path
         self.background_photos = os.listdir(background_path)
     def __call__(self, image, target):
@@ -246,8 +246,8 @@ class RandomAffine(object):
     def __init__(self, degrees = 25.0, probability = 0.9, translate=None, scale=None, shear=None):
         self.probability = probability
         self.angle = degrees
-        self.translation = [-8, 8]
-        self.shear = [-8,8]
+        self.translation = [-5, 5]
+        self.shear = [-5, 5]
         self.scale = [0.9, 1.1]
     def __call__(self, image, mask):
         if torch.rand(1) < self.probability:

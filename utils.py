@@ -39,7 +39,8 @@ def get_transform(train, resolution, background_path):
             transforms.append(T.Resize(resolution))
             transforms.append(T.RandomHorizontalFlip(0.5))
             transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation = 0.3, hue = 0.4, probability = 0.23))
-
+        else:
+            transforms.append(T.Resize(resolution))
     transforms.append(T.ToTensor())
     transforms.append(T.Normalize(mean=[0.485, 0.456, 0.406],
                                   std=[0.229, 0.224, 0.225]))

@@ -102,7 +102,7 @@ def train_segmentor(params):
         print(f'D  : {DiceLoss}  |  IOU : {IOULoss}')
 
         IOULoss+=20
-        if epoch == 1:
+        if epoch == 1 or epoch % 15 == 0:
             vizualize(train_loader, model, epoch, save_path = images_path, device = device)
 
         if best_IOU < IOULoss:

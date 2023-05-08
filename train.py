@@ -70,7 +70,7 @@ def train_segmentor(params):
 
     train_transform = get_transform(train = True, resolution = image_resolution, background_path=background_path)
     test_transform  = get_transform(train = False, resolution = image_resolution, background_path=background_path)
-    train_loader, test_loader = get_loaders(dataset_path=dataset_path, train_transform=train_transform, test_transform=test_transform,
+    test_loader, train_loader = get_loaders(dataset_path=dataset_path, train_transform=train_transform, test_transform=test_transform,
                                             n_workers=n_workers, batch_size=batch_size)
 
     model, params_to_optimize = get_model(model_name = 'resnet50', n_classes=2)
@@ -103,8 +103,8 @@ def train_segmentor(params):
 
         IOULoss+=20
         if epoch == 1 or epoch % 15 == 0:
-            vizualize(train_loader, model, epoch, save_path = images_path, device = device)
-
+            vizualize(test_loader, model, epoch, save_path = images_path, device = device, every_n = 5)
+            vizualize(train_loader, model, epoch, save_path=images_path, device = device, every_n = 200)
         if best_IOU < IOULoss:
             try:
                 os.remove(os.path.join(checkpoints_path, f'model_{best_IOU}.pth'))
@@ -115,7 +115,7 @@ def train_segmentor(params):
                        IOULoss= IOULoss, checkpoint_paths= checkpoints_path )
 
 
-            vizualize(train_loader, model, epoch, save_path=images_path, device=device)
+            vizualize(test_loader, model, epoch, save_path=images_path, device=device, every_n=5)
 
             best_IOU = IOULoss
 

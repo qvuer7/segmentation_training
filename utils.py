@@ -149,9 +149,9 @@ def save_model(n_classes, checkpoint_paths, model, IOULoss, resolution):
                )
     print(f'model saved: {path}')
 
-def vizualize(dataloader, model,  epoch, save_path, device):
+def vizualize(dataloader, model,  epoch, save_path, device, every_n):
     for c, (image, target) in enumerate(dataloader):
-        if c%6 == 0:
+        if c%every_n == 0:
             image, target = image.to(device), target.to(device)
             with torch.no_grad():
                 out = model(image)

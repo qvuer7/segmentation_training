@@ -1,10 +1,9 @@
 import os
 import re
-import math
 import torch
 
 from PIL import Image
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 from utils import collate_fn
 
 class CustomSegmentation(Dataset):

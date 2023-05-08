@@ -1,5 +1,4 @@
-from utils import get_model, get_transform, collate_fn, \
-    get_image_label, vizualize, save_model, create_training_job_folders
+from utils import get_model, get_transform, vizualize, save_model, create_training_job_folders
 from dataset import get_loaders
 from trainvalutils import train_one_epoch, evaluate
 from criterions import *

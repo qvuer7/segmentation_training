@@ -64,10 +64,10 @@ def get_train_transform(resolution, background_path):
     #                          std=[0.229, 0.224, 0.225]))
 
     train_trans = [
+        T.RandomHorizontalFlip(0.5),
         T.RandomAffine(),
         T.BackgroundSubstitution(background_path=background_path),
         T.Resize(resolution),
-        T.RandomHorizontalFlip(0.5),
         T.ColorJitter(brightness=0.2, contrast=0.3, saturation=0.3, hue=0.4, probability=0.23),
         T.ToTensor(),
         T.Normalize(mean=[0.485, 0.456, 0.406],

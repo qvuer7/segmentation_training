@@ -127,7 +127,7 @@ def get_model(model_name = 'resnet50', n_classes = 2):
 
     else :
         weights = torchvision.models.segmentation.DeepLabV3_ResNet50_Weights
-        model = torchvision.models.segmentation.__dict__['deeplab'](num_classes = n_classes,
+        model = torchvision.models.segmentation.__dict__['deeplabv3_resnet50'](num_classes = n_classes,
                                                                     weights = weights)
 
     params_to_optimize = [{'params': []}]

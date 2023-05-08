@@ -24,7 +24,7 @@ param_grid = {
     'io_coffs': [2.0],
     'dice_coffs': [2.0]
 }
-m = 'deeplab'
+m = 'deeplabv3_resnet50'
 # min_image_sizes = [300]
 # batch_sizes = [8]
 # learning_rates = [0.005]

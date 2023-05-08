@@ -18,7 +18,7 @@ param_grid = {
     'lr': [0.05, 0.005],
     'momentum': [0.9],
     'weight_decay': [0.01],
-    'L1_lambda': [0.001],
+    'L1_lambda': [0.1],
     'n_epochs': [50],
     'loss_weights': [[1.0,2.5], [1.0, 3.5], [1.0, 5.0]],
     'io_coffs': [2.0],

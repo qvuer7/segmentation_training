@@ -20,7 +20,9 @@ param_grid = {
     'weight_decay': [0.01],
     'L1_lambda': [0.001],
     'n_epochs': [50],
-    'loss_weights': [[1.0,2.5], [1.0, 3.0], [1.0, 3.5]]
+    'loss_weights': [[1.0,1.5], [1.0, 2.0], [1.0, 2.5]],
+    'io_coffs': [2.0],
+    'dice_coffs': [2.0]
 }
 # min_image_sizes = [300]
 # batch_sizes = [8]
@@ -60,7 +62,7 @@ warnings.filterwarnings("ignore")
 
 
 def train_segmentor(params):
-    min_image_size, batch_size, lr, momentum, weight_decay, L1_lambda, n_epochs, loss_weight = params
+    min_image_size, batch_size, lr, momentum, weight_decay, L1_lambda, n_epochs, loss_weight, io_coff, dice_coff = params
     job_path, checkpoints_path, images_path, log_path, train_check_images = create_training_job_folders(params, save_path = results_path)
     writer = SummaryWriter(log_dir=log_path)
 
@@ -87,7 +89,8 @@ def train_segmentor(params):
     for epoch in tqdm(range(1,n_epochs + 1)):
         trainCELoss = train_one_epoch(model = model, dataloader=train_loader,L1_lambda=L1_lambda,
                                      wghts=torch.tensor(loss_weight), optimizer = optimizer,
-                                     criterion=criterion, params=params_to_optimize, device = device)
+                                     criterion=criterion, params=params_to_optimize, device = device,
+                                      io_cof = io_coff, dice_cof=dice_coff)
 
 
         testCELoss, IOULoss, DiceLoss = evaluate(model=model, dataloader=test_loader, criterion=criterion,
@@ -128,9 +131,10 @@ if __name__ == '__main__':
 
     for params in param_combinations:
         train_segmentor(params = params)
-
+    #     break
+    #
     # min_image_size, batch_size, lr, momentum, weight_decay, L1_lambda, n_epochs, loss_weight = params
-    # job_path, checkpoints_path, images_path, log_path = create_training_job_folders(params, save_path=results_path)
+    # job_path, checkpoints_path, images_path, log_path, _ = create_training_job_folders(params, save_path=results_path)
     # writer = SummaryWriter(log_dir=log_path)
     #
     # aspect_ratio = 640 / 480

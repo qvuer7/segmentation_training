@@ -115,7 +115,7 @@ class ColorJitter:
 
 class BackgroundSubstitution():
     def __init__(self, background_path):
-        self.rate = 0.99
+        self.rate = 1
         self.background_path = background_path
         self.background_photos = os.listdir(background_path)
     def __call__(self, image, target):
@@ -124,7 +124,6 @@ class BackgroundSubstitution():
         if p < self.rate:
             v = np.random.randint(1, len(self.background_photos) - 2)
             self.background = Image.open(self.background_path + self.background_photos[v])
-
             self.background = np.array(self.background.resize(image.size))
             t = np.asarray(target)
             b = np.where(t == 1)
@@ -167,9 +166,9 @@ class RandomAffine(object):
     def __init__(self, degrees = 20.0, probability = 0.5, translate=None, scale=None, shear=None):
         self.probability = probability
         self.angle = degrees
-        self.translation = [-1, 1]
-        self.shear = [-0.25, 0.25]
-        self.scale = [0.75, 0.75]
+        self.translation = [-3, 3]
+        self.shear = [-0.5, 0.5]
+        self.scale = [1, 1.5]
     def __call__(self, image, mask):
         if torch.rand(1) < self.probability:
             angle = float(torch.rand(1) * self.angle)
@@ -177,7 +176,7 @@ class RandomAffine(object):
                            int(torch.rand(1) * self.translation[0] + self.translation[1])]
             shear = [float(torch.rand(1) * self.shear[0] + self.shear[1]),
                      float(torch.rand(1) * self.shear[0] + self.shear[1])]
-            scale = float(torch.rand(1) * self.scale[0] + self.scale[1])
+            scale = float(torch.rand(1)*0.5 +1)
 
             im = transforms.ToTensor()(image)
             ma = transforms.ToTensor()(mask)

@@ -15,12 +15,12 @@ import os
 param_grid = {
     'min_image_size': [300],
     'batch_size': [6],
-    'lr': [0.008],
+    'lr': [0.05, 0.005],
     'momentum': [0.9],
     'weight_decay': [0.01],
     'L1_lambda': [0.001],
     'n_epochs': [50],
-    'loss_weights': [[1.0,1.5], [1.0, 2.0], [1.0, 2.5]],
+    'loss_weights': [[1.0,2.5], [1.0, 3.5], [1.0, 5.0]],
     'io_coffs': [2.0],
     'dice_coffs': [2.0]
 }

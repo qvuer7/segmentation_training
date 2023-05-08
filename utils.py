@@ -184,6 +184,7 @@ def create_training_job_folders(params, save_path):
     images_path = os.path.join(job_path, 'images')
     checkpoints_path = os.path.join(job_path, 'checkpoints')
     log_path = os.path.join(job_path, 'logs')
+    images_train_path = os.path.join(images_path, 'train')
     try:
         os.mkdir(save_path)
     except Exception as e:
@@ -209,7 +210,12 @@ def create_training_job_folders(params, save_path):
     except Exception as e:
         print(e)
 
-    return job_path, checkpoints_path, images_path, log_path
+    try:
+        os.mkdir(images_train_path)
+    except Exception as e:
+        print(e)
+
+    return job_path, checkpoints_path, images_path, log_path, images_train_path
 
 if __name__ == '__main__':
     import itertools

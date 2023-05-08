@@ -178,9 +178,7 @@ class RandomAffine(object):
             shear = [float(torch.rand(1) * self.shear[0] + self.shear[1]),
                      float(torch.rand(1) * self.shear[0] + self.shear[1])]
             scale = float(torch.rand(1) * self.scale[0] + self.scale[1])
-            print(translation)
-            print(shear)
-            print(scale)
+
             im = transforms.ToTensor()(image)
             ma = transforms.ToTensor()(mask)
 

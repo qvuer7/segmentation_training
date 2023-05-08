@@ -79,7 +79,7 @@ def get_loaders(n_workers, batch_size, dataset_path, train_transform, test_trans
     test_dataset = CustomSegmentation(root_dir=dataset_path,
                                       image_set='val',
                                       transformations=test_transform)
-    print(f' train trans in get_loader: {train_transform}')
+
 
     train_sampler = torch.utils.data.RandomSampler(train_dataset)
     test_sampler = torch.utils.data.SequentialSampler(test_dataset)

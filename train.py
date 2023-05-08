@@ -66,7 +66,7 @@ def train_segmentor(params):
 
 
     aspect_ratio = 640 / min_image_size
-    image_resolution = (min_image_size, int(320 * aspect_ratio))
+    image_resolution = (min_image_size, int(min_image_size * aspect_ratio))
 
     train_transform = get_transform(train = True, resolution = image_resolution, background_path=background_path)
     test_transform  = get_transform(train = False, resolution = image_resolution, background_path=background_path)

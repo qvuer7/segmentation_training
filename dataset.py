@@ -9,12 +9,11 @@ from utils import collate_fn
 class CustomSegmentation(Dataset):
 
 
-    def __init__(self, root_dir, image_set='train', transforms=None):
-
+    def __init__(self, root_dir, image_set='train', transformations=None):
+        super(CustomSegmentation, self).__init__()
         self.images = []
         self.targets = []
-        self.transforms = transforms
-
+        self.transformations = transformations
         if image_set == 'train':
             train_images, train_targets = self.gather_images(os.path.join(root_dir, 'images/training'),
                                                              os.path.join(root_dir, 'annotations/training'))
@@ -58,8 +57,9 @@ class CustomSegmentation(Dataset):
         image = Image.open(self.images[index]).convert('RGB')
         target = Image.open(self.targets[index])
 
-        if self.transforms is not None:
-            image, target = self.transforms(image, target)
+        if self.transformations is not None:
+
+            image, target = self.transformations(image, target)
 
         return image, target
 
@@ -67,10 +67,11 @@ class CustomSegmentation(Dataset):
 def get_loaders(n_workers, batch_size, dataset_path, train_transform, test_transform):
     train_dataset = CustomSegmentation(root_dir=dataset_path
                                        , image_set='train',
-                                       transforms=train_transform)
+                                       transformations=train_transform)
     test_dataset = CustomSegmentation(root_dir=dataset_path,
                                       image_set='val',
-                                      transforms=test_transform)
+                                      transformations=test_transform)
+    print(f' train trans in get_loader: {train_transform}')
 
     train_sampler = torch.utils.data.RandomSampler(train_dataset)
     test_sampler = torch.utils.data.SequentialSampler(test_dataset)
@@ -84,3 +85,7 @@ def get_loaders(n_workers, batch_size, dataset_path, train_transform, test_trans
         num_workers=n_workers, sampler=test_sampler, drop_last=True)
 
     return test_loader, train_loader
+
+
+if __name__ == '__main__':
+    pass

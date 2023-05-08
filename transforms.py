@@ -1,4 +1,5 @@
 import os
+import torchvision
 from torchvision import transforms as T
 import torchvision.transforms.functional as F
 import random
@@ -8,24 +9,6 @@ import torchvision.transforms as transforms
 from PIL import Image
 
 
-
-def pad_if_smaller(img, size, fill=0):
-    min_size = min(img.size)
-    if min_size < size:
-        ow, oh = img.size
-        padh = size - oh if oh < size else 0
-        padw = size - ow if ow < size else 0
-        img = F.pad(img, (0, 0, padw, padh), fill=fill)
-    return img
-def pad_if_smaller2(img, sizex, sizey, fill =0):
-    min_size = min(img.size)
-
-    ow, oh = img.size
-    padh = sizey - oh if oh < sizey else 0
-    padw = sizex - ow if ow < sizex else 0
-    img = F.pad(img, (0, 0, padw, padh), fill=fill)
-    return img
-
 class Compose(object):
     def __init__(self, transforms):
         self.transforms = transforms
@@ -33,7 +16,10 @@ class Compose(object):
     def __call__(self, image, target):
         for t in self.transforms:
             image, target = t(image, target)
+
         return image, target
+
+
 
 
 class Resize(object):
@@ -45,20 +31,6 @@ class Resize(object):
         target = F.resize(target, self.size, interpolation=Image.NEAREST)
         return image, target
 
-class RandomResize(object):
-    def __init__(self, min_size, max_size=None):
-        self.min_size = min_size
-        if max_size is None:
-            max_size = min_size
-        self.max_size = max_size
-
-    def __call__(self, image, target):
-        size = random.randint(self.min_size, self.max_size)
-        image = F.resize(image, size)
-        target = F.resize(target, size, interpolation=Image.NEAREST)
-        return image, target
-
-
 class RandomHorizontalFlip(object):
     def __init__(self, flip_prob):
         self.flip_prob = flip_prob
@@ -67,58 +39,6 @@ class RandomHorizontalFlip(object):
         if random.random() < self.flip_prob:
             image = F.hflip(image)
             target = F.hflip(target)
-        return image, target
-
-
-class RandomCrop(object):
-    def __init__(self, size):
-        self.size = size
-
-    def __call__(self, image, target):
-        image = pad_if_smaller(image, self.size)
-        target = pad_if_smaller(target, self.size, fill=0)
-        crop_params = T.RandomCrop.get_params(image, (self.size, self.size))
-        image = F.crop(image, *crop_params)
-        target = F.crop(target, *crop_params)
-        return image, target
-
-class RandomCrop2(object):
-    def __init__(self, sizex, original_size):
-        self.sizex = sizex
-        self.original_size = original_size
-    def __call__(self, image, target):
-        aspect_ratio = self.original_size[0] / self.original_size[1]
-        sizey = int(self.sizex / aspect_ratio)
-
-        image = pad_if_smaller2(image, self.sizex, sizey)
-        target = pad_if_smaller2(target, self.sizex,sizey, fill =  0)
-
-        crop_params = T.RandomCrop.get_params(image, (self.sizex, sizey))
-        image = F.crop(image, *crop_params)
-        target = F.crop(target, *crop_params)
-        return image, target
-
-class RandomResize2(object):
-    def __init__(self, original_size, min_edge_size):
-        self.original_size = original_size
-        self.min_edge_size = min_edge_size
-
-    def __call__(self, image, label):
-        aspect_ratio = self.original_size[0]/self.original_size[1]
-
-
-        max_target_size = int(self.min_edge_size/aspect_ratio)
-        image = F.resize(image, (self.min_edge_size, max_target_size))
-        target = F.resize(label, (self.min_edge_size, max_target_size), interpolation=Image.NEAREST)
-
-        return image, target
-class CenterCrop(object):
-    def __init__(self, size):
-        self.size = size
-
-    def __call__(self, image, target):
-        image = F.center_crop(image, self.size)
-        target = F.center_crop(target, self.size)
         return image, target
 
 
@@ -193,14 +113,15 @@ class ColorJitter:
         return image
 
 
-class BackgroundSubstitution(object):
-    def __init__(self, background_path ):
+class BackgroundSubstitution():
+    def __init__(self, background_path):
         self.rate = 1
         self.background_path = background_path
         self.background_photos = os.listdir(background_path)
     def __call__(self, image, target):
         p = torch.rand(1)
-        if p < self.rate:
+
+        if p < 1:
             v = np.random.randint(1, len(self.background_photos) - 2)
             self.background = Image.open(self.background_path + self.background_photos[v])
 
@@ -219,7 +140,7 @@ class BackgroundSubstitution(object):
 
 
 class RandomRotation(object):
-    def __init__(self, min_angle = 5, max_angle = 55, rotation_probability = 0.35, expansion_probability = 0.5):
+    def __init__(self, min_angle = 5, max_angle = 55, rotation_probability = 0.35, expansion_probability = 0.99):
         self.min_angle = min_angle
         self.max_angle = max_angle
         self.rotation_probability = rotation_probability
@@ -243,7 +164,7 @@ class RandomRotation(object):
 
 
 class RandomAffine(object):
-    def __init__(self, degrees = 25.0, probability = 0.9, translate=None, scale=None, shear=None):
+    def __init__(self, degrees = 20.0, probability = 0.5, translate=None, scale=None, shear=None):
         self.probability = probability
         self.angle = degrees
         self.translation = [-5, 5]
@@ -252,8 +173,8 @@ class RandomAffine(object):
     def __call__(self, image, mask):
         if torch.rand(1) < self.probability:
             angle = float(torch.rand(1) * self.angle)
-            translation = [float(torch.rand(1) * self.translation[0] + self.translation[1]),
-                           float(torch.rand(1) * self.translation[0] + self.translation[1])]
+            translation = [int(torch.rand(1) * self.translation[0] + self.translation[1]),
+                           int(torch.rand(1) * self.translation[0] + self.translation[1])]
             shear = [float(torch.rand(1) * self.shear[0] + self.shear[1]),
                      float(torch.rand(1) * self.shear[0] + self.shear[1])]
             scale = float(torch.rand(1) * self.scale[0] + self.scale[1])
@@ -287,31 +208,8 @@ if __name__ == '__main__':
     image = Image.open(r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01\images\training\22_01_13_16_04_22.jpg')
     mask  = Image.open(r'C:\Users\Andrii\PycharmProjects\segmentationTraining\segmentation_dataset_24_01\annotations\training\22_01_13_16_04_22.png')
 
-    ra = RandomAffine(degrees=40)
-    i, m = ra(image, mask)
-
-    i, m = np.asarray(i), np.asarray(m)
-    # print(f'Random Affine')
-    # print(i.min(), i.max())
-    # print(m.min(), m.max())
-    # print('BackGround')
-    # i, m = b(image, mask)
-    # i, m = np.asarray(i), np.asarray(m)
-    # print(i.min(), i.max())
-    # print(m.min(), m.max())
-
-
-    import matplotlib.pyplot as plt
-
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2)
-
-    ax1.imshow(image)
-    ax2.imshow(mask)
-    ax3.imshow(i)
-    ax4.imshow(m)
-    plt.show()
-
-
-
-
+    tran = []
+    tran.append(BackgroundSubstitution(background_path=r'C:\Users\Andrii\PycharmProjects\segmentationTraining\background\\'))
+    a  = Compose(tran)
+    a(image, mask)
 

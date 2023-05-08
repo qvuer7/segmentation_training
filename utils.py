@@ -5,9 +5,10 @@ from resnet34.fcn_resnet import fcn_resnet34
 import torchvision
 import matplotlib.pyplot as plt
 import os
+import torchvision.transforms as TF
 
 def get_transform(train, resolution, background_path):
-    transforms = []
+    trans = []
 
 
     if resolution[0] == resolution[1]:
@@ -20,13 +21,14 @@ def get_transform(train, resolution, background_path):
 
 
         if train:
-            transforms.append(T.BackgroundSubstitution(background_path=background_path))
-            transforms.append(T.RandomResize(min_size, max_size))
-            transforms.append(T.RandomHorizontalFlip(0.5))
-            transforms.append(T.RandomCrop(crop_size))
-            transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation=0.3, hue=0.4, probability = 0.23))
+
+            trans.append(T.BackgroundSubstitution(background_path=background_path))
+            trans.append(T.RandomResize(min_size, max_size))
+            trans.append(T.RandomHorizontalFlip(0.5))
+            trans.append(T.RandomCrop(crop_size))
+            trans.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation=0.3, hue=0.4, probability = 0.23))
         else:
-            transforms.append(T.RandomResize(min_size, max_size))
+            trans.append(T.RandomResize(min_size, max_size))
     else:
 
 
@@ -34,19 +36,59 @@ def get_transform(train, resolution, background_path):
         #transforms.append(T.RandomResize2((resolution), 320))
         if train:
             # transforms.append(T.RandomRotation())
-            transforms.append(T.RandomAffine())
-            transforms.append(T.BackgroundSubstitution(background_path=background_path))
-            transforms.append(T.Resize(resolution))
-            transforms.append(T.RandomHorizontalFlip(0.5))
-            transforms.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation = 0.3, hue = 0.4, probability = 0.23))
+            trans.append(T.RandomAffine())
+            trans.append(T.BackgroundSubstitution(background_path=background_path))
+            trans.append(T.Resize(resolution))
+            trans.append(T.RandomHorizontalFlip(0.5))
+            trans.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation = 0.3, hue = 0.4, probability = 0.23))
         else:
-            transforms.append(T.Resize(resolution))
-    transforms.append(T.ToTensor())
-    transforms.append(T.Normalize(mean=[0.485, 0.456, 0.406],
+            trans.append(T.Resize(resolution))
+    trans.append(T.ToTensor())
+    trans.append(T.Normalize(mean=[0.485, 0.456, 0.406],
                                   std=[0.229, 0.224, 0.225]))
 
-    return T.Compose(transforms)
+    return T.Compose(trans)
 
+
+def get_train_transform(resolution, background_path):
+    # train_trans = []
+    #
+    # train_trans.append(T.RandomAffine())
+    # train_trans.append(T.BackgroundSubstitution(background_path=background_path))
+    # train_trans.append(T.Resize(resolution))
+    # train_trans.append(T.RandomHorizontalFlip(0.5))
+    # train_trans.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation=0.3, hue=0.4, probability=0.23))
+    #
+    # train_trans.append(T.ToTensor())
+    # train_trans.append(T.Normalize(mean=[0.485, 0.456, 0.406],
+    #                          std=[0.229, 0.224, 0.225]))
+
+    train_trans = [
+        T.RandomAffine(),
+        T.BackgroundSubstitution(background_path=background_path),
+        T.Resize(resolution),
+        T.RandomHorizontalFlip(0.5),
+        T.ColorJitter(brightness=0.2, contrast=0.3, saturation=0.3, hue=0.4, probability=0.23),
+        T.ToTensor(),
+        T.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
+
+
+    ]
+
+    return T.Compose(train_trans)
+
+def get_test_transform(resolution):
+
+    test_trans = [
+        T.Resize(resolution),
+        T.ToTensor(),
+        T.Normalize(mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225])
+    ]
+
+
+    return T.Compose(test_trans)
 
 def cat_list(images, fill_value=0):
     max_size = tuple(max(s) for s in zip(*[img.shape for img in images]))

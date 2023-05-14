@@ -15,6 +15,7 @@ def dice_coefficient(prediction, target, n_classes):
         else:
 
             prediction = (prediction > 0).float()
+            prediction = torch.where(prediction != 0, torch.tensor(1), prediction)
             intersection = torch.logical_and(prediction, target).sum()
             dice = (2 * intersection + 1e-7) / (
                         prediction.sum() + target.sum() + 1e-7)  # Adding a small epsilon to avoid division by zero
@@ -33,6 +34,7 @@ def iou(prediction, target, n_classes):
             iou = (intersection + smooth) / (union + smooth)
         else:
             prediction = (prediction > 0).float()
+            prediction = torch.where(prediction != 0, torch.tensor(1), prediction)
             intersection = torch.logical_and(prediction, target).sum()
             union = torch.logical_or(prediction, target).sum()
             iou = intersection / (union + 1e-7)  # Adding a small epsilon to avoid division by zero

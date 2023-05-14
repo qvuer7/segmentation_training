@@ -139,7 +139,7 @@ class BackgroundSubstitution():
 
 
 class RandomRotation(object):
-    def __init__(self, min_angle = 5, max_angle = 55, rotation_probability = 0.35, expansion_probability = 0.99):
+    def __init__(self, min_angle = 30, max_angle = 75, rotation_probability = 0.35, expansion_probability = 0.99):
         self.min_angle = min_angle
         self.max_angle = max_angle
         self.rotation_probability = rotation_probability
@@ -167,7 +167,7 @@ class RandomAffine(object):
         self.probability = probability
         self.angle = degrees
         self.translation = [-3, 3]
-        self.shear = [-0.5, 0.5]
+        self.shear = [-1, 1]
         self.scale = [1, 1.5]
     def __call__(self, image, mask):
         if torch.rand(1) < self.probability:

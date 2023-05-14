@@ -13,10 +13,10 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
         for v in params[0]['params']:
             total_l1_loss += torch.norm(v.data, 1)
 
-        #total_l1_loss = total_l1_loss * L1_lambda
+        total_l1_loss = total_l1_loss * L1_lambda
 
         loss = criterion(out, target, we = wghts, device = device, n_classes = n_classes)
-        #loss += total_l1_loss
+        loss += total_l1_loss
 
         loss += 1 - (iou(out['out'], target, n_classes)*1)
         loss += 1 - (dice_coefficient(out['out'], target, n_classes)*1)

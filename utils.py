@@ -37,7 +37,7 @@ def get_transform(train, resolution, background_path):
         if train:
             # transforms.append(T.RandomRotation())
             trans.append(T.RandomAffine())
-            #trans.append(T.BackgroundSubstitution(background_path=background_path))
+            trans.append(T.BackgroundSubstitution(background_path=background_path))
             trans.append(T.Resize(resolution))
             trans.append(T.RandomHorizontalFlip(0.5))
             trans.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation = 0.3, hue = 0.4, probability = 0.23))

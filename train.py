@@ -126,10 +126,10 @@ if __name__ == '__main__':
     for params in param_combinations:
 
         train_segmentor(params = params)
-    #     break
-    #
+        break
+
     # model, parametrs = get_model(m, n_classes = n_classes)
-    # print(model)
+    #
     # # save_model(n_classes = 2, model = model, name = m, resolution = (640, 480), IOULoss=12,
     # #            checkpoint_paths=r'C:\Users\Andrii\PycharmProjects\segmentationTraining\runs\\')
     # #     break
@@ -147,15 +147,19 @@ if __name__ == '__main__':
     #                                         test_transform=test_transform,
     #                                         n_workers=n_workers, batch_size=batch_size)
     #
+    # #
+    # # vizualize(test_loader, model, 1,  r'C:\Users\Andrii\PycharmProjects\segmentationTraining\results\\', device, 5, 1)
     #
-    # vizualize(test_loader, model, 1,  r'C:\Users\Andrii\PycharmProjects\segmentationTraining\results\\', device, 5, 1)
-
     # for idx, (images, labels) in enumerate(train_loader):
     #     break
     #
-    # # out = model(images)
-    # # print(out['out'].shape)
-    # # out = out['out']
+    # out = model(images)
+    # print(out['out'].shape)
+    # out = out['out']
+    # import numpy as np
+    # print(np.unique(out.detach().numpy()))
+    # l = iou(out, labels, n_classes=n_classes)
+    # print(print(l))
     # # mask = out[0].detach().squeeze()
     # # import matplotlib.pyplot as plt
     # # plt.imshow(mask)

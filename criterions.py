@@ -14,7 +14,7 @@ def dice_coefficient(prediction, target, n_classes):
             dice = (2.0 * intersection + smooth) / (union + smooth)
         else:
 
-
+            prediction = (prediction > 0).float()
             intersection = torch.logical_and(prediction, target).sum()
             dice = (2 * intersection + 1e-7) / (
                         prediction.sum() + target.sum() + 1e-7)  # Adding a small epsilon to avoid division by zero
@@ -32,6 +32,7 @@ def iou(prediction, target, n_classes):
             union = torch.sum(prediction_binary) + torch.sum(target) - intersection
             iou = (intersection + smooth) / (union + smooth)
         else:
+            prediction = (prediction > 0).float()
             intersection = torch.logical_and(prediction, target).sum()
             union = torch.logical_or(prediction, target).sum()
             iou = intersection / (union + 1e-7)  # Adding a small epsilon to avoid division by zero
@@ -48,11 +49,12 @@ def CECriterion(inputs, target, we, device, n_classes):
     for name, x in inputs.items():
 
         x = x.squeeze()
-
+        x = torch.sigmoid(x)
+        x = x.float()
         target = target.float()
         losses[name] = criterion(x, target)
 
-
+        print(losses[name])
 
     if len(losses) == 1:
 

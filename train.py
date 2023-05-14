@@ -54,14 +54,6 @@ else:
 warnings.filterwarnings("ignore")
 
 
-# try:
-#     os.mkdir(image_save_path)
-#     os.mkdir(model_save_path)
-#     os.mkdir(global_logdir_path)
-#     print('dirs created')
-# except Exception as e:
-#     print(e)
-
 
 def train_segmentor(params):
     min_image_size, batch_size, lr, momentum, weight_decay, L1_lambda, n_epochs, loss_weight, io_coff, dice_coff = params
@@ -108,8 +100,8 @@ def train_segmentor(params):
 
 
         if epoch == 1 or epoch % 15 == 0:
-            vizualize(test_loader, model, epoch, save_path = images_path, device = device, every_n = 5)
-            vizualize(train_loader, model, epoch, save_path=train_check_images, device = device, every_n = 25)
+            vizualize(test_loader, model, epoch, save_path = images_path, device = device, every_n = 5, n_classes = n_classes)
+            vizualize(train_loader, model, epoch, save_path=train_check_images, device = device, every_n = 25, n_classes = n_classes)
         if best_IOU < IOULoss:
             try:
                 os.remove(os.path.join(checkpoints_path, f'model_{best_IOU}.pth'))
@@ -120,7 +112,7 @@ def train_segmentor(params):
                        IOULoss= IOULoss, checkpoint_paths= checkpoints_path, name = m )
 
 
-            vizualize(test_loader, model, epoch, save_path=images_path, device=device, every_n=5)
+            vizualize(test_loader, model, epoch, save_path=images_path, device=device, every_n=5, n_classes = n_classes)
 
             best_IOU = IOULoss
 
@@ -132,16 +124,17 @@ if __name__ == '__main__':
     param_combinations = list(itertools.product(*param_grid.values()))
 
     for params in param_combinations:
-        train_segmentor(params = params)
 
-    #
-    # model, parametrs = get_model(m, n_classes = 2)
-    # print(model)
-    # save_model(n_classes = 2, model = model, name = m, resolution = (640, 480), IOULoss=12,
-    #            checkpoint_paths=r'C:\Users\Andrii\PycharmProjects\segmentationTraining\runs\\')
+        train_segmentor(params = params)
     #     break
     #
-    # min_image_size, batch_size, lr, momentum, weight_decay, L1_lambda, n_epochs, loss_weight = params
+    # model, parametrs = get_model(m, n_classes = n_classes)
+    # print(model)
+    # # save_model(n_classes = 2, model = model, name = m, resolution = (640, 480), IOULoss=12,
+    # #            checkpoint_paths=r'C:\Users\Andrii\PycharmProjects\segmentationTraining\runs\\')
+    # #     break
+    #
+    # min_image_size, batch_size, lr, momentum, weight_decay, L1_lambda, n_epochs, loss_weight, io_coff, dice_coff = params
     # job_path, checkpoints_path, images_path, log_path, _ = create_training_job_folders(params, save_path=results_path)
     # writer = SummaryWriter(log_dir=log_path)
     #
@@ -153,12 +146,23 @@ if __name__ == '__main__':
     # test_loader, train_loader = get_loaders(dataset_path=dataset_path, train_transform=train_transform,
     #                                         test_transform=test_transform,
     #                                         n_workers=n_workers, batch_size=batch_size)
+    #
+    #
+    # vizualize(test_loader, model, 1,  r'C:\Users\Andrii\PycharmProjects\segmentationTraining\results\\', device, 5, 1)
+
     # for idx, (images, labels) in enumerate(train_loader):
     #     break
     #
+    # # out = model(images)
+    # # print(out['out'].shape)
+    # # out = out['out']
+    # # mask = out[0].detach().squeeze()
+    # # import matplotlib.pyplot as plt
+    # # plt.imshow(mask)
+    # # plt.show()
     #
+
     #
-    # #
     # import matplotlib.pyplot as plt
     # from utils import get_image_label
     # import numpy as np

@@ -155,7 +155,7 @@ def save_model(n_classes, checkpoint_paths, model, IOULoss, resolution, name):
                )
     print(f'model saved: {path}')
 
-def vizualize(dataloader, model,  epoch, save_path, device, every_n):
+def vizualize(dataloader, model,  epoch, save_path, device, every_n, n_classes):
     for c, (image, target) in enumerate(dataloader):
         if c%every_n == 0:
             image, target = image.to(device), target.to(device)
@@ -165,7 +165,10 @@ def vizualize(dataloader, model,  epoch, save_path, device, every_n):
 
             out = out['out'].squeeze().cpu()
             i = image[0].permute(1, 2, 0).numpy()
-            m = out[0].argmax(dim=0).numpy()
+            if n_classes == 1:
+                m = out[0].numpy().squeeze()
+            else:
+                m = out[0].argmax(dim=0).numpy()
 
             min_value = i.min()
             max_value = i.max()

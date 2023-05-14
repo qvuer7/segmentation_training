@@ -25,7 +25,7 @@ def iou(prediction, target):
     return iou.item()
 
 
-def CECriterion(inputs, target, we, device):
+def CECriterion(inputs, target, we, device, n_classes):
     losses = {}
 
     weight = we.to(device)

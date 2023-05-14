@@ -31,11 +31,12 @@ def CECriterion(inputs, target, we, device, n_classes = 2):
     weight = we.to(device)
     criterion = nn.CrossEntropyLoss()
     if n_classes == 1:
-        target = target.unsqueeze(1).float()
-
+        t = target.unsqueeze(1).float()
+    else:
+        t = target
     for name, x in inputs.items():
         # losses[name] = nn.functional.cross_entropy(x, target)
-        losses[name] = criterion(x, target)
+        losses[name] = criterion(x, t)
 
 
     if len(losses) == 1:

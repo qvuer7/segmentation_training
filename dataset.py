@@ -58,17 +58,9 @@ class CustomSegmentation(Dataset):
         target = Image.open(self.targets[index])
 
         if self.transformations is not None:
-            # i, m = image.copy(), target.copy()
+
             image, target = self.transformations(image, target)
-            # import matplotlib.pyplot as plt
-            # from utils import get_image_label
-            # fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2)
-            # ax1.imshow(i)
-            # ax2.imshow(m)
-            # i, m = get_image_label(image, target)
-            # ax3.imshow(i)
-            # ax4.imshow(m)
-            # plt.show()
+
         return image, target
 
 

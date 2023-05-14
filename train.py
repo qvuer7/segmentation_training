@@ -20,11 +20,12 @@ param_grid = {
     'weight_decay': [0.01],
     'L1_lambda': [0.1],
     'n_epochs': [50],
-    'loss_weights': [[1.0,2.5], [1.0, 3.5], [1.0, 5.0]],
+    # 'loss_weights': [[1.0,2.5], [1.0, 3.5], [1.0, 5.0]],
+    'loss_weights': [[1.0, 1.0]],
     'io_coffs': [2.0],
     'dice_coffs': [2.0]
 }
-m = 'deeplabv3_resnet50'
+m = 'resnet50'
 # min_image_sizes = [300]
 # batch_sizes = [8]
 # learning_rates = [0.005]
@@ -33,7 +34,7 @@ m = 'deeplabv3_resnet50'
 # L1_lambdas = [0.01]
 # ns_epochs = [50]
 
-n_classes = 2
+n_classes = 1
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 n_workers = 2 if torch.cuda.is_available() else 0
@@ -76,7 +77,7 @@ def train_segmentor(params):
     test_loader, train_loader = get_loaders(dataset_path=dataset_path, train_transform=train_transform, test_transform=test_transform,
                                             n_workers=n_workers, batch_size=batch_size)
 
-    model, params_to_optimize = get_model(model_name = m, n_classes=2)
+    model, params_to_optimize = get_model(model_name = m, n_classes=n_classes)
     model = model.to(device)
     optimizer = torch.optim.SGD(
         params_to_optimize,
@@ -91,11 +92,11 @@ def train_segmentor(params):
         trainCELoss = train_one_epoch(model = model, dataloader=train_loader,L1_lambda=L1_lambda,
                                      wghts=torch.tensor(loss_weight), optimizer = optimizer,
                                      criterion=criterion, params=params_to_optimize, device = device,
-                                      io_cof = io_coff, dice_cof=dice_coff)
+                                      n_classes = n_classes)
 
 
         testCELoss, IOULoss, DiceLoss = evaluate(model=model, dataloader=test_loader, criterion=criterion,
-                                            device=device, wghts=torch.tensor(loss_weight))
+                                            device=device, wghts=torch.tensor(loss_weight), n_classes=n_classes)
 
         writer.add_scalar(f"Loss/train", trainCELoss, epoch)
         writer.add_scalar(f"Loss/val", testCELoss, epoch)

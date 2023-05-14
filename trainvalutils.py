@@ -1,7 +1,7 @@
 import torch
 from criterions import dice_coefficient, iou
 
-def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_lambda, wghts, io_cof, dice_cof):
+def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_lambda, wghts, n_classes):
     model.train()
     tl = 0
     for c, (image, target) in enumerate(dataloader):
@@ -15,7 +15,7 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
 
         total_l1_loss = total_l1_loss * L1_lambda
 
-        loss = criterion(out, target, we = wghts, device = device)
+        loss = criterion(out, target, we = wghts, device = device, n_classes = n_classes)
         loss += total_l1_loss
         # loss -= (iou(out['out'], target)*io_cof)
         # loss -= (dice_coefficient(out['out'], target)*dice_cof)
@@ -30,7 +30,7 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
 
 
 
-def evaluate(model, criterion, dataloader, device, wghts):
+def evaluate(model, criterion, dataloader, device, wghts, n_classes):
     model.eval()
     print('EVALUATING')
     tl = 0
@@ -42,7 +42,7 @@ def evaluate(model, criterion, dataloader, device, wghts):
             out = model(image)
             io += iou(out['out'], target)
             dl += dice_coefficient(out['out'], target)
-            loss = criterion(out, target, we = wghts, device = device)
+            loss = criterion(out, target, we = wghts, device = device, n_classes = n_classes)
             tl+= loss.item()
 
 

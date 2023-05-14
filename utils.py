@@ -37,7 +37,7 @@ def get_transform(train, resolution, background_path):
         if train:
             # transforms.append(T.RandomRotation())
             trans.append(T.RandomAffine())
-            trans.append(T.BackgroundSubstitution(background_path=background_path))
+            #trans.append(T.BackgroundSubstitution(background_path=background_path))
             trans.append(T.Resize(resolution))
             trans.append(T.RandomHorizontalFlip(0.5))
             trans.append(T.ColorJitter(brightness=0.2, contrast=0.3, saturation = 0.3, hue = 0.4, probability = 0.23))
@@ -117,7 +117,7 @@ def get_image_label(image_tensor, label):
 
 
 
-def get_model(model_name = 'resnet50', n_classes = 2):
+def get_model(model_name = 'resnet50', n_classes = 1):
     if model_name == 'resnet50':
         weights = torchvision.models.ResNet50_Weights
         model = torchvision.models.segmentation.__dict__['fcn_resnet50'](num_classes=n_classes,
@@ -223,35 +223,23 @@ def create_training_job_folders(params, save_path):
 
     return job_path, checkpoints_path, images_path, log_path, images_train_path
 
+
+
 if __name__ == '__main__':
-    import itertools
-    # model = get_model(model_name = 'resnet50', n_classes = 2)
-    param_grid = {
-        'min_image_size': [300],
-        'batch_size': [8, 16],
-        'lr': [0.005],
-        'momentum': [0.9],
-        'weight_decay': [0.01],
-        'L1_lambda': [0.01],
-        'n_epochs': [50],
-        'loss_weights': [[1.0, 3.0], [1.0, 4.0], [1.0, 5.0]]
-    }
-    param_combinations = list(itertools.product(*param_grid.values()))
-    for params in param_combinations:
-        break
+    # Load the pretrained model
+    weights = torchvision.models.segmentation.DeepLabV3_ResNet50_Weights.DEFAULT
+    pretrained = torchvision.models.segmentation.__dict__['deeplabv3_resnet50'](
+                                                                           weights=weights)
 
-    min_image_size, batch_size, lr, momentum, weight_decay, L1_lambda, n_epochs, loss_weights = params
-    print(min_image_size)
-    print(batch_size)
-    print(lr)
-    print(momentum)
-    print(weight_decay)
-    print(L1_lambda)
-    print(n_epochs)
-    print(loss_weights)
+    target_model = torchvision.models.segmentation.__dict__['deeplabv3_resnet50'](num_classes = 2)
 
+    target_model_dict = target_model.state_dict()
+    target_model_dict2 = {k: v for k, v in pretrained.state_dict().items() if k in target_model_dict}
 
-
+    target_model_dict.update(target_model_dict2)
+    target_model.load_state_dict(target_model_dict)
+    # target_model.backbone.load_state_dict(pretrained.backbone.state_dict())
+    # target_model.classifier.load_state_dict(pretrained.classifier.state_dict())
 
 
 

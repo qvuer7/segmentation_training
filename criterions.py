@@ -25,11 +25,14 @@ def iou(prediction, target):
     return iou.item()
 
 
-def CECriterion(inputs, target, we, device):
+def CECriterion(inputs, target, we, device, n_classes = 2):
     losses = {}
 
     weight = we.to(device)
-    criterion = nn.CrossEntropyLoss(weight = weight)
+    criterion = nn.CrossEntropyLoss()
+    if n_classes == 1:
+        target = target.unsqueeze(1).float()
+
     for name, x in inputs.items():
         # losses[name] = nn.functional.cross_entropy(x, target)
         losses[name] = criterion(x, target)

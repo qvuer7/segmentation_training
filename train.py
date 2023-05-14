@@ -79,7 +79,7 @@ def train_segmentor(params):
 
 
     IOULoss = 0
-    best_IOU = -torch.inf
+    best_IOU = torch.inf
     for epoch in tqdm(range(1,n_epochs + 1)):
         trainCELoss = train_one_epoch(model = model, dataloader=train_loader,L1_lambda=L1_lambda,
                                      wghts=torch.tensor(loss_weight), optimizer = optimizer,
@@ -102,7 +102,7 @@ def train_segmentor(params):
         if epoch == 1 or epoch % 15 == 0:
             vizualize(test_loader, model, epoch, save_path = images_path, device = device, every_n = 5, n_classes = n_classes)
             vizualize(train_loader, model, epoch, save_path=train_check_images, device = device, every_n = 25, n_classes = n_classes)
-        if best_IOU < IOULoss:
+        if best_IOU > testCELoss:
             try:
                 os.remove(os.path.join(checkpoints_path, f'model_{best_IOU}.pth'))
             except Exception as e:

@@ -13,6 +13,8 @@ def dice_coefficient(prediction, target, n_classes):
             union = torch.sum(prediction_binary) + torch.sum(target)
             dice = (2.0 * intersection + smooth) / (union + smooth)
         else:
+
+
             intersection = torch.logical_and(prediction, target).sum()
             dice = (2 * intersection + 1e-7) / (
                         prediction.sum() + target.sum() + 1e-7)  # Adding a small epsilon to avoid division by zero

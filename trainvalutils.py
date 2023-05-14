@@ -18,8 +18,8 @@ def train_one_epoch(model, dataloader, optimizer,criterion, device, params, L1_l
         loss = criterion(out, target, we = wghts, device = device, n_classes = n_classes)
         #loss += total_l1_loss
 
-        # loss -= (iou(out['out'], target)*io_cof)
-        # loss -= (dice_coefficient(out['out'], target)*dice_cof)
+        loss += 1 - (iou(out['out'], target, n_classes)*0.3)
+        loss += 1 - (dice_coefficient(out['out'], target, n_classes)*0.7)
         loss.requires_grad_(True)
         tl+=loss.item()
 

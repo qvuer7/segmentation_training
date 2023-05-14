@@ -14,12 +14,12 @@ import os
 
 param_grid = {
     'min_image_size': [300],
-    'batch_size': [6],
-    'lr': [0.05, 0.005],
+    'batch_size': [16, 32],
+    'lr': [0.005, 0.01],
     'momentum': [0.9],
-    'weight_decay': [0.01],
+    'weight_decay': [0.0001, 0.001],
     'L1_lambda': [0.1],
-    'n_epochs': [50],
+    'n_epochs': [100],
     # 'loss_weights': [[1.0,2.5], [1.0, 3.5], [1.0, 5.0]],
     'loss_weights': [[1.0, 1.0]],
     'io_coffs': [2.0],
@@ -79,7 +79,7 @@ def train_segmentor(params):
 
 
     IOULoss = 0
-    best_IOU = torch.inf
+    best_IOU = -torch.inf
     for epoch in tqdm(range(1,n_epochs + 1)):
         trainCELoss = train_one_epoch(model = model, dataloader=train_loader,L1_lambda=L1_lambda,
                                      wghts=torch.tensor(loss_weight), optimizer = optimizer,
@@ -102,7 +102,7 @@ def train_segmentor(params):
         if epoch == 1 or epoch % 15 == 0:
             vizualize(test_loader, model, epoch, save_path = images_path, device = device, every_n = 5, n_classes = n_classes)
             vizualize(train_loader, model, epoch, save_path=train_check_images, device = device, every_n = 25, n_classes = n_classes)
-        if best_IOU > testCELoss:
+        if best_IOU < IOULoss:
             try:
                 os.remove(os.path.join(checkpoints_path, f'model_{best_IOU}.pth'))
             except Exception as e:
@@ -114,7 +114,7 @@ def train_segmentor(params):
 
             vizualize(test_loader, model, epoch, save_path=images_path, device=device, every_n=5, n_classes = n_classes)
 
-            best_IOU = testCELoss
+            best_IOU = IOULoss
 
 
 

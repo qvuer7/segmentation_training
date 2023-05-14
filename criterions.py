@@ -49,8 +49,6 @@ def CECriterion(inputs, target, we, device, n_classes):
     for name, x in inputs.items():
 
         x = x.squeeze()
-        x = torch.sigmoid(x)
-        x = x.float()
         target = target.float()
         losses[name] = criterion(x, target)
 

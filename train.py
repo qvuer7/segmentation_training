@@ -114,7 +114,7 @@ def train_segmentor(params):
 
             vizualize(test_loader, model, epoch, save_path=images_path, device=device, every_n=5, n_classes = n_classes)
 
-            best_IOU = IOULoss
+            best_IOU = testCELoss
 
 
 

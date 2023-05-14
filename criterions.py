@@ -54,7 +54,7 @@ def CECriterion(inputs, target, we, device, n_classes):
         target = target.float()
         losses[name] = criterion(x, target)
 
-        print(losses[name])
+
 
     if len(losses) == 1:
 

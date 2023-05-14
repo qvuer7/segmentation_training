@@ -2,26 +2,37 @@ import torch
 import torch.nn as nn
 
 
-def dice_coefficient(prediction, target):
+def dice_coefficient(prediction, target, n_classes):
     smooth = 1e-5  # Small constant to avoid division by zero
     threshold = 0.5  # Threshold for converting network output to binary mask
     with torch.no_grad():
-        predicted_class = torch.argmax(prediction, dim=1)  # Get the predicted class index
-        prediction_binary = (predicted_class == 1).float()
-        intersection = torch.sum(prediction_binary * target)
-        union = torch.sum(prediction_binary) + torch.sum(target)
-        dice = (2.0 * intersection + smooth) / (union + smooth)
+        if n_classes != 1:
+            predicted_class = torch.argmax(prediction, dim=1)  # Get the predicted class index
+            prediction_binary = (predicted_class == 1).float()
+            intersection = torch.sum(prediction_binary * target)
+            union = torch.sum(prediction_binary) + torch.sum(target)
+            dice = (2.0 * intersection + smooth) / (union + smooth)
+        else:
+            intersection = torch.logical_and(prediction, target).sum()
+            dice = (2 * intersection + 1e-7) / (
+                        prediction.sum() + target.sum() + 1e-7)  # Adding a small epsilon to avoid division by zero
+
     return dice.item()
 
-def iou(prediction, target):
+def iou(prediction, target, n_classes):
     smooth = 1e-5  # Small constant to avoid division by zero
     threshold = 0.5  # Threshold for converting network output to binary mask
     with torch.no_grad():
-        predicted_class = torch.argmax(prediction, dim=1)  # Get the predicted class index
-        prediction_binary = (predicted_class == 1).float()
-        intersection = torch.sum(prediction_binary * target)
-        union = torch.sum(prediction_binary) + torch.sum(target) - intersection
-        iou = (intersection + smooth) / (union + smooth)
+        if n_classes != 1:
+            predicted_class = torch.argmax(prediction, dim=1)  # Get the predicted class index
+            prediction_binary = (predicted_class == 1).float()
+            intersection = torch.sum(prediction_binary * target)
+            union = torch.sum(prediction_binary) + torch.sum(target) - intersection
+            iou = (intersection + smooth) / (union + smooth)
+        else:
+            intersection = torch.logical_and(prediction, target).sum()
+            union = torch.logical_or(prediction, target).sum()
+            iou = intersection / (union + 1e-7)  # Adding a small epsilon to avoid division by zero
     return iou.item()
 
 
